@@ -1,7 +1,8 @@
 <!--
-情報取得ツールVer0.03
+情報取得ツールVer0.04
 製作者:のの @nonogame5656
 製作日：2019年5月14日
+更新日：2019年5月23日
 -->
 
 
@@ -9,7 +10,7 @@
 <html>
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=8 ; IE=9" charset="utf-8" />
-<title>VRChat 情報取得ツールVer0.03</title>
+<title>VRChat 情報取得ツールVer0.04</title>
 <style type="text/css">
     table { table-layout:fixed }
     td { background-color:#fff1ff }
@@ -23,7 +24,13 @@
 	var obj_friends_offline = "";
 	var obj_friends_ope_1 = "";
 	var obj_friends_ope_2 = "";
-	var obj_world="";
+	var obj_world_recent="";
+	var obj_world_favorites="";
+	var obj_world_active="";
+	var obj_world_add=[];
+	var obj_world_count={};
+	var g_apiKey="";
+	
 	var request_counter=0;
 	
     //初期設定
@@ -32,10 +39,57 @@
     }
     init();
     
+	function sort_friend_by_world() {
+		
+		obj_world_count = {};
+		for(var i=0;i<obj_friends_online.length;++i){
+		if(!obj_world_count[obj_friends_online[i].location.split(":")[0]]){
+			obj_world_count[obj_friends_online[i].location.split(":")[0]] =1;
+			}else{
+			obj_world_count[obj_friends_online[i].location.split(":")[0]] +=1;
+			}
+			//update_status("world数："+obj_friends_online[i].location.split(":")[0]+" "+obj_world_count[obj_friends_online[i].location.split(":")[0]]);
+		}
+		
+		update_status("列数："+obj_friends_online.length);
+      obj_friends_online = obj_friends_online.sort(function(a, b){
+      var x = obj_world_count[a.location.split(":")[0]];
+      var y = obj_world_count[b.location.split(":")[0]];
+      if (a.location == "private"){return 1};
+      if (b.location == "private"){return -1};
+      if (x > y) return -1;
+      if (x < y) return 1;
+      var x = a.location.split(":")[0];
+      var y = b.location.split(":")[0];
+      if (x > y) return -1;
+      if (x < y) return 1;
+      var x = a.location.split(":")[1];
+      var y = b.location.split(":")[1];
+      if (x > y) return -1;
+      if (x < y) return 1;
+      return 0;
+    });
+    }
+    
 	function find_world_name_by_id(id) {
-		for(var i=0;i<obj_world.length;i++){
-			if(obj_world[i].id == id){
-				return obj_world[i];
+		for(var i=0;i<obj_world_recent.length;i++){
+			if(obj_world_recent[i].id == id){
+				return obj_world_recent[i];
+			}
+		}
+		for(var i=0;i<obj_world_favorites.length;i++){
+			if(obj_world_favorites[i].id == id){
+				return obj_world_favorites[i];
+			}
+		}
+		for(var i=0;i<obj_world_active.length;i++){
+			if(obj_world_active[i].id == id){
+				return obj_world_active[i];
+			}
+		}
+		for(var i=0;i<obj_world_add.length;i++){
+			if(obj_world_add[i].id == id){
+				return obj_world_add[i];
 			}
 		}
 		return {"name":"","thumbnailImageURL":""};
@@ -138,14 +192,19 @@
 			}
 			else{
 				world_obj_info = find_world_name_by_id(obj[i].location.split(':')[0]);
-				world_info = "<td width='500' align='center'><B>"+world_obj_info.name+"</B><BR> (" +obj[i].location.split('~')[0]+")</td>";
+				
+				if(world_obj_info.name !=""){
+					world_info = "<td width='500' align='center'><B>"+world_obj_info.name+"</B><BR> (" +obj[i].location.split('~')[0]+")</td>";
+				}else{
+					world_info = "<td width='500' align='center'><B>"+"<a href=\"#\" onclick=\"OnGetWorldName("+i+");return false;\">" +"ワールドの名前とサムネイル取得"+"</a></B><BR> (" +obj[i].location.split('~')[0]+")</td>";
+				}
 				if(world_obj_info.thumbnailImageURL !=""){
 					world_info += "<td width='110' align='center'>"+"<img src=\""+world_obj_info.imageUrl+"\" width=\"100\"></td>"
 				}else{
 					world_info += "<td width='110' align='center'></td>"
 				}
 			}
-			result += "<tr height='10'>"
+			result += "<tr height='30'>"
 			
 			result += "<td width='30' align='center'>"
 					+(i+1)+"</td><td width='110' align='center'>"
@@ -157,7 +216,7 @@
 			}
 			result += "</table>";
 			msg_out(result);
-			update_status("列数："+obj.length)
+			//update_status("列数："+obj.length)
 			break;
 		case "friend_list_offline":		//user 
 			result += "<table><th>NO.</th><th>サムネイル</th><th>ユーザー名</th><th>表示名</th><th>場所</th>"
@@ -173,7 +232,7 @@
 			}
 			result += "</table>";
 			msg_out(result);
-			update_status("列数："+obj.length)
+			//update_status("列数："+obj.length)
 			break;
 		case "friend_list_all":
 			result += "<table><th>NO.</th><th>ID</th><th>サムネイル</th><th>ユーザー名</th><th>表示名</th><th>操作種類</th><th>日付</th>"
@@ -199,7 +258,7 @@
 	}
     
     
-	function test2(apiKey) {
+	function get_vrchat_info(apiKey) {
 	    var xhr 			= new XMLHttpRequest();
 
 	    var var_user 		= document.getElementById('id_user').value;
@@ -276,13 +335,14 @@
 						}
 						if(obj.length==100){
 							update_status("リスト取得：＜"+(100*request_counter));
-							test2(apiKey);
+							get_vrchat_info(apiKey);
 						}else{
 							obj = obj_temp;
 							obj_temp = "";
 							switch(var_info_type){
 							case "friend_list_online":
 								obj_friends_online = obj;
+								sort_friend_by_world()
 								break;
 							case "friend_list_offline":
 								obj_friends_offline = obj;
@@ -324,8 +384,17 @@
 			if(this.readyState==4){
 				if(xhr.responseText){
 					var obj = JSON.parse(xhr.responseText);
-					get_World(obj.apiKey);
-				    test2(obj.apiKey);
+					g_apiKey = obj.apiKey;
+					if(obj_world_recent==""){
+						get_World_recent(obj.apiKey);
+					}
+					if(obj_world_favorites==""){
+						get_World_Favorite(obj.apiKey);
+					}
+					if(get_World_Active==""){
+						get_World_Active(obj.apiKey);
+					}
+				    get_vrchat_info(obj.apiKey);
 	    		}
 			}
 		}
@@ -339,7 +408,7 @@
 	}
 
 
-	function get_World(apiKey) {
+	function get_World_recent(apiKey) {
 
 	    var xhr 		= new XMLHttpRequest();
 		var xhrURL		= 'https://api.vrchat.cloud/api/1/worlds/recent'+ "?apiKey="+apiKey;
@@ -349,7 +418,69 @@
 			if(this.readyState==4){
 				if(xhr.responseText){
 					var obj = JSON.parse(xhr.responseText);
-				    obj_world = obj;
+				    obj_world_recent = obj;
+	    		}
+			}
+		}
+	    
+	    xhr.open( xhrMethod, xhrURL );
+	    xhr.responseType = "text" ;
+	    xhr.send();
+	    
+	}
+	
+	function get_World_Favorite(apiKey) {
+
+	    var xhr 		= new XMLHttpRequest();
+		var xhrURL		= 'https://api.vrchat.cloud/api/1/worlds/favorites'+ "?apiKey="+apiKey;
+		var xhrMethod	= 'GET'
+
+		xhr.onreadystatechange = function(){
+			if(this.readyState==4){
+				if(xhr.responseText){
+					var obj = JSON.parse(xhr.responseText);
+				    obj_world_favorites = obj;
+	    		}
+			}
+		}
+	    
+	    xhr.open( xhrMethod, xhrURL );
+	    xhr.responseType = "text" ;
+	    xhr.send();
+	    
+	}
+	function get_World_Active(apiKey) {
+
+	    var xhr 		= new XMLHttpRequest();
+		var xhrURL		= 'https://api.vrchat.cloud/api/1/worlds/favorites'+ "?apiKey="+apiKey;
+		var xhrMethod	= 'GET'
+
+		xhr.onreadystatechange = function(){
+			if(this.readyState==4){
+				if(xhr.responseText){
+					var obj = JSON.parse(xhr.responseText);
+				    obj_world_active = obj;
+	    		}
+			}
+		}
+	    
+	    xhr.open( xhrMethod, xhrURL );
+	    xhr.responseType = "text" ;
+	    xhr.send();
+	    
+	}
+	function OnGetWorldName(no) {
+
+	    var xhr 		= new XMLHttpRequest();
+		var xhrURL		= 'https://api.vrchat.cloud/api/1/worlds/'+obj_friends_online[no].location.split(":")[0]+ "?apiKey="+g_apiKey;
+		var xhrMethod	= 'GET'
+		//update_status("URL："+xhrURL);
+		xhr.onreadystatechange = function(){
+			if(this.readyState==4){
+				if(xhr.responseText){
+					var obj = JSON.parse(xhr.responseText);
+				    obj_world_add.push(obj);
+				    display_info(obj_friends_online);
 	    		}
 			}
 		}
@@ -428,7 +559,7 @@
 </head>
 	<body>
 	<div id="id_header">
-		■□■□　VRChat 情報取得ツールVer0.03　□■□■
+		■□■□　VRChat 情報取得ツールVer0.04　□■□■
 	</div>
 	
 	<BR>
