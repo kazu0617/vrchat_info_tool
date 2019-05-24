@@ -78,9 +78,9 @@
 			}
 			break;
 		case "state_get_data":
+			g_state_normal = "state_wait";
 			document.getElementById('id_repat_time').innerHTML ="Žæ“¾’†"
 			get_vrchat_info(g_apiKey);
-			g_state_normal = "state_wait";
 			break;
 		case "state_wait":
 			break;
@@ -471,7 +471,7 @@
 				if(xhr.responseText){
 					var obj = JSON.parse(xhr.responseText);
 					g_apiKey = obj.apiKey;
-					g_state_pre = "state_get_pre_data_2";
+					g_state_pre = "state_get_pre_end";
 	    		}
 			}
 		}
