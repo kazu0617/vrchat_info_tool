@@ -49,6 +49,7 @@
 	case "state_start":
 		switch(g_state_pre){
 		case "state_get_pre_data_1":
+			document.getElementById('id_repat_time').innerHTML ="取得中"
 			get_APIkey();//'JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26'
 			break;
 		case "state_get_pre_data_2":
@@ -75,6 +76,8 @@
 					g_state_normal = "state_get_data";
 					var_reapt_start = Date.now();
 				}
+			}else{
+				document.getElementById('id_repat_time').innerHTML =""
 			}
 			break;
 		case "state_get_data":
@@ -578,6 +581,18 @@
 	
 	function get_information() {
 	
+	    var var_user 		= document.getElementById('id_user').value;
+	    var var_pass 		= document.getElementById('id_pass').value;
+	    
+	    if(var_user == ""){
+	    	update_status("ユーザー名を入力してください")
+	    	return false;
+	    }
+	    if(var_pass == ""){
+	    	update_status("パスワードを入力してください")
+	    	return false;
+	    }
+	    
 		var var_info_type_list 	= document.getElementsByName('info_type');
 
 	    for(var i=0;i<var_info_type_list.length;i++){
@@ -622,7 +637,7 @@
 	    	document.getElementById('id_interface_button').innerHTML = "　　　　　　　　　　　<button onclick=\"stop_repeat()\" style=\"height:30px;width:100px\">停止</button>";
 	    }
 	    
-	    if(g_state_pre == "state_start"){
+	    if(g_state == "state_start"){
 			g_state_pre = "state_get_pre_data_1";
 		}
 		if(g_state_normal == "state_stanby"){
