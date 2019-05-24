@@ -1,8 +1,8 @@
 <!--
-情報取得ツールVer0.04
+情報取得ツールVer0.05
 製作者:のの @nonogame5656
 製作日：2019年5月14日
-更新日：2019年5月23日
+更新日：2019年5月24日
 -->
 
 
@@ -10,7 +10,7 @@
 <html>
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=8 ; IE=9" charset="utf-8" />
-<title>VRChat 情報取得ツールVer0.04</title>
+<title>VRChat 情報取得ツールVer0.05</title>
 <style type="text/css">
     table { table-layout:fixed }
     td { background-color:#fff1ff }
@@ -19,11 +19,13 @@
 <script type="text/javascript">
 
 	var var_info_type 		= "";
+	var var_repeat_type 		= "";
 	var obj_temp = "";
 	var obj_friends_online = "";
 	var obj_friends_offline = "";
 	var obj_friends_ope_1 = "";
 	var obj_friends_ope_2 = "";
+	var obj_user = "";
 	var obj_world_recent="";
 	var obj_world_favorites="";
 	var obj_world_active="";
@@ -33,11 +35,97 @@
 	
 	var request_counter=0;
 	
+	var g_state_pre    = "state_start";
+	var g_state_normal = "state_stanby";
+	var g_state        = "state_start";
+	var var_repeat_start = 0;
+	var var_repeat_interval = 0;
+	
+	var main_loop = function(){
+	
+	//update_status("g_state_pre："+g_state_pre+"  g_state_normal："+g_state_normal+"  g_state："+g_state);
+	
+	switch(g_state){
+	case "state_start":
+		switch(g_state_pre){
+		case "state_get_pre_data_1":
+			get_APIkey();//'JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26'
+			break;
+		case "state_get_pre_data_2":
+			get_World_recent(g_apiKey);
+			break;
+		case "state_get_pre_data_3":
+			get_World_Favorite(g_apiKey);
+			break;
+		case "state_get_pre_data_4":
+			get_World_Active(g_apiKey);
+			break;
+		case "state_get_pre_end":
+			g_state = "state_normal";
+			break;
+		}
+		break;
+	case "state_normal":
+		switch(g_state_normal){
+			case "state_stanby":
+			if(var_repeat_interval){
+				document.getElementById('id_repat_time').innerHTML = "次の取得まで："+parseInt((var_repeat_interval - (Date.now() - var_reapt_start))/1000)+"秒";
+				if((var_repeat_interval - (Date.now() - var_reapt_start))<0){
+					update_status("インターバルによる取得");
+					g_state_normal = "state_get_data";
+					var_reapt_start = Date.now();
+				}
+			}
+			break;
+		case "state_get_data":
+			document.getElementById('id_repat_time').innerHTML ="取得中"
+			get_vrchat_info(g_apiKey);
+			g_state_normal = "state_wait";
+			break;
+		case "state_wait":
+			break;
+		case "state_display":
+			display_info();
+			g_state_normal = "state_stanby";
+			break;
+		}
+		break;
+	}
+	
+	
+	};
+    	
     //初期設定
     function init(){
         window.resizeTo(1200,1200);
+        setInterval(main_loop, 100);
     }
     init();
+    
+
+	
+    function display_info(){
+		switch(var_info_type){
+		case "friend_1":		//playermoderated 
+			display_info_friend(obj_friends_ope_1)
+			break;
+		case "friend_2":		//playermoderations
+			display_info_friend(obj_friends_ope_2)
+			break;
+		case "self_info":		
+			display_info_user(obj_user)
+			break;
+		case "friend_list_online":		
+			display_info_friend_online(obj_friends_online)
+			break;
+		case "friend_list_offline":	
+			display_info_friend_offline(obj_friends_offline)
+			break;
+		case "friend_list_all":
+			display_info_friend_all(obj_user)
+			break;
+		}
+    }
     
 	function sort_friend_by_world() {
 		
@@ -122,142 +210,150 @@
 		return {"username":"","displayName":""};
 	}
 	
-	function display_info(obj) {
+	function display_info_friend(obj) {
 		var result="";
 		
-		switch(var_info_type){
-		case "friend_1":		//playermoderated 
-		case "friend_2":		//playermoderations
-			result += "<table><th>日時</th><th>種類</th><th>from</th><th>to</th>"
-			for(var i=0;i<obj.length;i++){
-			result += "<tr height='10'>"
-			result += "<td width='200' align='center'>"
-					+obj[i].created+"</td><td width='100' align='center'>"
-					+obj[i].type+"</td><td width='200' align='center'>"
-					+obj[i].sourceDisplayName+"</td><td width='200' align='center'>"
-					+obj[i].targetDisplayName+"</td>";
-			result += "</tr>"
-			}
-			result += "</table>";
-			msg_out(result);
-			update_status("列数："+obj.length)
-		break;
-		
-		case "self_info":		//user 
-			result += "<table><th>情報</th><th>データ</th>"
-			result += "<tr height='10'>"
-			result += "<td width='200' align='center'>フレンド数</td><td width='220' align='center'>"+obj.friends.length+"</td>"
-			result += "</tr><tr height='10'>"
-			result += "<td width='200' align='center'>ID</td><td width='220' align='center'>"+obj.id+"</td>"
-			result += "</tr><tr height='10'>"
-			result += "<td width='200' align='center'>サムネイル</td><td width='220' align='center'><img src=\""+obj.currentAvatarThumbnailImageUrl+"\" width=\"200\"></td>"
-			result += "</tr><tr height='10'>"
-			result += "<td width='200' align='center'>username</td><td width='220' align='center'>"+obj.username+"</td>"
-			result += "</tr><tr height='10'>"
-			result += "<td width='200' align='center'>displayName</td><td width='220' align='center'>"+obj.displayName+"</td>"
-			result += "</tr>"
-			result += "</table>";
-			result += "<br>"
-						if(obj.pastDisplayNames.length){
-			result += "<table><th>変更日</th><th>過去の表示名</th>"
-			result += "<tr height='10'>"
-			for(var i=0;i<obj.pastDisplayNames.length;i++){
-				result += "<tr height='10'>"
-				result += "<td width='200' align='center'>"+obj.pastDisplayNames[i].updated_at+"</td><td width='200' align='center'>"+obj.pastDisplayNames[i].displayName+"</td>"
-				result += "</tr>"
-			}
-			result += "</table>";
-			}
-			result += "<br>"
-			
-			result += "<table><th>タグ名一覧</th>"
-			result += "<tr height='10'>"
-			for(var i=0;i<obj.tags.length;i++){
-			result += "<tr height='10'>"
-			result += "<td width='100' align='left'>"
-					+obj.tags[i]+"</td>"
-			result += "</tr>"
-			}
-			result += "</table>";
-			
-			
-			msg_out(result);
-			break;
-		case "friend_list_online":		//user 
-			result += "<table><th>NO.</th><th>サムネイル</th><th>ユーザー名</th><th>表示名</th><th>場所</th><th>サムネイル</th>"
-			for(var i=0;i<obj.length;i++){
-			var world_info="";
-			if(obj[i].location=="private"){
-				world_info = "<td width='500' align='center'>PRIVATE</td><td width='110' align='center'></td>";
-			}
-			else{
-				world_obj_info = find_world_name_by_id(obj[i].location.split(':')[0]);
-				
-				if(world_obj_info.name !=""){
-					world_info = "<td width='500' align='center'><B>"+world_obj_info.name+"</B><BR> (" +obj[i].location.split('~')[0]+")</td>";
-				}else{
-					world_info = "<td width='500' align='center'><B>"+"<a href=\"#\" onclick=\"OnGetWorldName("+i+");return false;\">" +"ワールドの名前とサムネイル取得"+"</a></B><BR> (" +obj[i].location.split('~')[0]+")</td>";
-				}
-				if(world_obj_info.thumbnailImageURL !=""){
-					world_info += "<td width='110' align='center'>"+"<img src=\""+world_obj_info.imageUrl+"\" width=\"100\"></td>"
-				}else{
-					world_info += "<td width='110' align='center'></td>"
-				}
-			}
-			result += "<tr height='30'>"
-			
-			result += "<td width='30' align='center'>"
-					+(i+1)+"</td><td width='110' align='center'>"
-					+"<img src=\""+obj[i].currentAvatarThumbnailImageUrl+"\" width=\"100\"></td><td width='200' align='center'>"
-					+obj[i].username+"</td><td width='200' align='center'>"
-					+obj[i].displayName+"</td>"
-					+world_info//
-			result += "</tr>"
-			}
-			result += "</table>";
-			msg_out(result);
-			//update_status("列数："+obj.length)
-			break;
-		case "friend_list_offline":		//user 
-			result += "<table><th>NO.</th><th>サムネイル</th><th>ユーザー名</th><th>表示名</th><th>場所</th>"
-			result += "<tr height='10'>"
-			for(var i=0;i<obj.length;i++){
-			result += "<td width='30' align='center'>"
-					+(i+1)+"</td><td width='110' align='center'>"
-					+"<img src=\""+obj[i].currentAvatarThumbnailImageUrl+"\" width=\"100\"></td><td width='200' align='center'>"
-					+obj[i].username+"</td><td width='200' align='center'>"
-					+obj[i].displayName+"</td><td width='200' align='center'>"
-					+"offline</td>"//
-			result += "</tr>"
-			}
-			result += "</table>";
-			msg_out(result);
-			//update_status("列数："+obj.length)
-			break;
-		case "friend_list_all":
-			result += "<table><th>NO.</th><th>ID</th><th>サムネイル</th><th>ユーザー名</th><th>表示名</th><th>操作種類</th><th>日付</th>"
-			for(var i=0;i<obj.friends.length;i++){
-				var friend_obj = find_name_by_id(obj.friends[i])
-				var friend_ope_obj = find_friend_name_by_id(obj.friends[i])
-			result += "<tr height='10'>"
-			result += "<td width='30' align='center'>"
-					+(i+1)+"</td><td width='100' align='center'>"
-					+"<font size=\"2\">"+obj.friends[i]+"</font></td><td width='110' align='center'>"
-					+"<img src=\""+friend_obj.currentAvatarThumbnailImageUrl+"\" width=\"100\"></td><td width='200' align='center'>"
-					+friend_obj.username+"</td><td width='200' align='center'>"
-					+friend_obj.displayName+"</td><td width='200' align='center'>"
-					+friend_ope_obj.type+"</td><td width='200' align='center'>"
-					+friend_ope_obj.created+"</td>"
-			result += "</tr>"
-			}
-			result += "</table>";
-			msg_out(result);
-			update_status("列数："+obj.length)
-			break;
+		result += "<table><th>日時</th><th>種類</th><th>from</th><th>to</th>"
+		for(var i=0;i<obj.length;i++){
+		result += "<tr height='10'>"
+		result += "<td width='200' align='center'>"
+				+obj[i].created+"</td><td width='100' align='center'>"
+				+obj[i].type+"</td><td width='200' align='center'>"
+				+obj[i].sourceDisplayName+"</td><td width='200' align='center'>"
+				+obj[i].targetDisplayName+"</td>";
+		result += "</tr>"
 		}
+		result += "</table>";
+		msg_out(result);
+		update_status("列数："+obj.length)
+	}
+	
+	
+	function display_info_user(obj) {
+		var result="";
+		
+		result += "<table><th>情報</th><th>データ</th>"
+		result += "<tr height='10'>"
+		result += "<td width='200' align='center'>フレンド数</td><td width='220' align='center'>"+obj.friends.length+"</td>"
+		result += "</tr><tr height='10'>"
+		result += "<td width='200' align='center'>ID</td><td width='220' align='center'>"+obj.id+"</td>"
+		result += "</tr><tr height='10'>"
+		result += "<td width='200' align='center'>サムネイル</td><td width='220' align='center'><img src=\""+obj.currentAvatarThumbnailImageUrl+"\" width=\"200\"></td>"
+		result += "</tr><tr height='10'>"
+		result += "<td width='200' align='center'>username</td><td width='220' align='center'>"+obj.username+"</td>"
+		result += "</tr><tr height='10'>"
+		result += "<td width='200' align='center'>displayName</td><td width='220' align='center'>"+obj.displayName+"</td>"
+		result += "</tr>"
+		result += "</table>";
+		result += "<br>"
+					if(obj.pastDisplayNames.length){
+		result += "<table><th>変更日</th><th>過去の表示名</th>"
+		result += "<tr height='10'>"
+		for(var i=0;i<obj.pastDisplayNames.length;i++){
+			result += "<tr height='10'>"
+			result += "<td width='200' align='center'>"+obj.pastDisplayNames[i].updated_at+"</td><td width='200' align='center'>"+obj.pastDisplayNames[i].displayName+"</td>"
+			result += "</tr>"
+		}
+		result += "</table>";
+		}
+		result += "<br>"
+		
+		result += "<table><th>タグ名一覧</th>"
+		result += "<tr height='10'>"
+		for(var i=0;i<obj.tags.length;i++){
+		result += "<tr height='10'>"
+		result += "<td width='100' align='left'>"
+				+obj.tags[i]+"</td>"
+		result += "</tr>"
+		}
+		result += "</table>";
+		
+		
+		msg_out(result);
+	}
+	
+	function display_info_friend_online(obj) {
+		var result="";
+		
+		result += "<table><th>NO.</th><th>サムネイル</th><th>ユーザー名</th><th>表示名</th><th>場所</th><th>サムネイル</th>"
+		for(var i=0;i<obj.length;i++){
+		var world_info="";
+		if(obj[i].location=="private"){
+			world_info = "<td width='500' align='center'>PRIVATE</td><td width='110' align='center'></td>";
+		}
+		else{
+			world_obj_info = find_world_name_by_id(obj[i].location.split(':')[0]);
+			
+			if(world_obj_info.name !=""){
+				world_info = "<td width='500' align='center'><B>"+world_obj_info.name+"</B><BR> (" +obj[i].location.split('~')[0]+")</td>";
+			}else{
+				world_info = "<td width='500' align='center'><B>"+"<a href=\"#\" onclick=\"OnGetWorldName("+i+");return false;\">" +"ワールドの名前とサムネイル取得"+"</a></B><BR> (" +obj[i].location.split('~')[0]+")</td>";
+			}
+			if(world_obj_info.thumbnailImageURL !=""){
+				world_info += "<td width='110' align='center'>"+"<img src=\""+world_obj_info.imageUrl+"\" width=\"100\"></td>"
+			}else{
+				world_info += "<td width='110' align='center'></td>"
+			}
+		}
+		result += "<tr height='30'>"
+		
+		result += "<td width='30' align='center'>"
+				+(i+1)+"</td><td width='110' align='center'>"
+				+"<img src=\""+obj[i].currentAvatarThumbnailImageUrl+"\" width=\"100\"></td><td width='200' align='center'>"
+				+obj[i].username+"</td><td width='200' align='center'>"
+				+obj[i].displayName+"</td>"
+				+world_info//
+		result += "</tr>"
+		}
+		result += "</table>";
+		msg_out(result);
+		//update_status("列数："+obj.length)
+
+	}
+	
+	function display_info_friend_offline(obj) {
+		var result="";
+		
+		result += "<table><th>NO.</th><th>サムネイル</th><th>ユーザー名</th><th>表示名</th><th>場所</th>"
+		result += "<tr height='10'>"
+		for(var i=0;i<obj.length;i++){
+		result += "<td width='30' align='center'>"
+				+(i+1)+"</td><td width='110' align='center'>"
+				+"<img src=\""+obj[i].currentAvatarThumbnailImageUrl+"\" width=\"100\"></td><td width='200' align='center'>"
+				+obj[i].username+"</td><td width='200' align='center'>"
+				+obj[i].displayName+"</td><td width='200' align='center'>"
+				+"offline</td>"//
+		result += "</tr>"
+		}
+		result += "</table>";
+		msg_out(result);
+		//update_status("列数："+obj.length)
+	}
+	
+	function display_info_friend_all(obj) {
+		var result="";
+		
+		result += "<table><th>NO.</th><th>ID</th><th>サムネイル</th><th>ユーザー名</th><th>表示名</th><th>操作種類</th><th>日付</th>"
+		for(var i=0;i<obj.friends.length;i++){
+			var friend_obj = find_name_by_id(obj.friends[i])
+			var friend_ope_obj = find_friend_name_by_id(obj.friends[i])
+		result += "<tr height='10'>"
+		result += "<td width='30' align='center'>"
+				+(i+1)+"</td><td width='100' align='center'>"
+				+"<font size=\"2\">"+obj.friends[i]+"</font></td><td width='110' align='center'>"
+				+"<img src=\""+friend_obj.currentAvatarThumbnailImageUrl+"\" width=\"100\"></td><td width='200' align='center'>"
+				+friend_obj.username+"</td><td width='200' align='center'>"
+				+friend_obj.displayName+"</td><td width='200' align='center'>"
+				+friend_ope_obj.type+"</td><td width='200' align='center'>"
+				+friend_ope_obj.created+"</td>"
+		result += "</tr>"
+		}
+		result += "</table>";
+		msg_out(result);
+		update_status("列数："+obj.friends.length)
 	}
     
-    
+	   
 	function get_vrchat_info(apiKey) {
 	    var xhr 			= new XMLHttpRequest();
 
@@ -265,14 +361,6 @@
 	    var var_pass 		= document.getElementById('id_pass').value;
 	    var var_output 		= document.getElementById('id_output').value;
 	    
-		var var_info_type_list 	= document.getElementsByName('info_type');
-
-	    for(var i=0;i<var_info_type_list.length;i++){
-	    	if(var_info_type_list[i].checked){
-	    		var_info_type = var_info_type_list[i].value;
-	    		break;
-	    	}
-	    }
 		
 		//update_status("apiKey："+apiKey);
 		//update_status("取得種類："+var_info_type);
@@ -316,12 +404,10 @@
 					case "friend_1":
 						var obj = JSON.parse(xhr.responseText);
 						obj_friends_ope_1 = obj;
-						display_info(obj);
 						break;
 					case "friend_2":
 						var obj = JSON.parse(xhr.responseText);
 						obj_friends_ope_2 = obj;
-						display_info(obj);
 						break;
 					case "friend_list_online":
 					case "friend_list_offline":
@@ -349,13 +435,13 @@
 								break;
 							}
 							request_counter=0;
-							display_info(obj);
 						}
 						break;
 					default:
-				    	display_info(JSON.parse(xhr.responseText));
-					break;
+						obj_user = JSON.parse(xhr.responseText);
+						break;
 					}
+					g_state_normal = "state_display";
 	    		}
 			}
 
@@ -369,7 +455,7 @@
 	    
 	    xhr.send();
 	   // xhr.abort();
- 
+
 	}
 	
 	
@@ -385,16 +471,7 @@
 				if(xhr.responseText){
 					var obj = JSON.parse(xhr.responseText);
 					g_apiKey = obj.apiKey;
-					if(obj_world_recent==""){
-						get_World_recent(obj.apiKey);
-					}
-					if(obj_world_favorites==""){
-						get_World_Favorite(obj.apiKey);
-					}
-					if(get_World_Active==""){
-						get_World_Active(obj.apiKey);
-					}
-				    get_vrchat_info(obj.apiKey);
+					g_state_pre = "state_get_pre_data_2";
 	    		}
 			}
 		}
@@ -419,6 +496,7 @@
 				if(xhr.responseText){
 					var obj = JSON.parse(xhr.responseText);
 				    obj_world_recent = obj;
+				    g_state_pre = "state_get_pre_data_3";
 	    		}
 			}
 		}
@@ -440,6 +518,7 @@
 				if(xhr.responseText){
 					var obj = JSON.parse(xhr.responseText);
 				    obj_world_favorites = obj;
+				    g_state_pre = "state_get_pre_data_4";
 	    		}
 			}
 		}
@@ -460,6 +539,7 @@
 				if(xhr.responseText){
 					var obj = JSON.parse(xhr.responseText);
 				    obj_world_active = obj;
+				    g_state_pre = "state_get_pre_end";
 	    		}
 			}
 		}
@@ -480,7 +560,7 @@
 				if(xhr.responseText){
 					var obj = JSON.parse(xhr.responseText);
 				    obj_world_add.push(obj);
-				    display_info(obj_friends_online);
+				    g_state_normal = "state_display";
 	    		}
 			}
 		}
@@ -490,8 +570,64 @@
 	    xhr.send();
 	    
 	}
+	function stop_repeat() {
+		document.getElementById('id_interface_button').innerHTML = "<button onclick=\"get_information()\" style=\"height:30px;width:100px\">取得</button>";
+		document.getElementById('id_repat_time').innerHTML =""
+		var_repeat_interval =  0;
+	}
+	
 	function get_information() {
-		get_APIkey();//'JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26'
+	
+		var var_info_type_list 	= document.getElementsByName('info_type');
+
+	    for(var i=0;i<var_info_type_list.length;i++){
+	    	if(var_info_type_list[i].checked){
+	    		var_info_type = var_info_type_list[i].value;
+	    		break;
+	    	}
+	    }
+		var var_repeat_type_list 	= document.getElementsByName('repeat_type');
+
+	    for(var i=0;i<var_repeat_type_list.length;i++){
+	    	if(var_repeat_type_list[i].checked){
+	    		var_repeat_type = var_repeat_type_list[i].value;
+	    		break;
+	    	}
+	    }
+	    
+		switch(var_repeat_type){
+		case "1min_repeat":
+			var_repeat_interval =  60000;
+			
+			break;
+		case "3min_repeat":
+			var_repeat_interval = 180000;
+			break;
+		case "5min_repeat":
+			var_repeat_interval = 300000;
+			break;
+		case "10min_repeat":
+			var_repeat_interval = 600000;
+			break;
+		case "no_repat":
+			var_repeat_interval = 0;
+		break;
+		}
+		
+		var_reapt_start = Date.now();
+	    
+	    if(var_repeat_type == "no_repeat"){
+	    	document.getElementById('id_interface_button').innerHTML = "<button onclick=\"get_information()\" style=\"height:30px;width:100px\">取得</button>";
+	    }else{
+	    	document.getElementById('id_interface_button').innerHTML = "　　　　　　　　　　　<button onclick=\"stop_repeat()\" style=\"height:30px;width:100px\">停止</button>";
+	    }
+	    
+	    if(g_state_pre == "state_start"){
+			g_state_pre = "state_get_pre_data_1";
+		}
+		if(g_state_normal == "state_stanby"){
+			g_state_normal = "state_get_data";
+		}
 	}
 
 	function enc_base64(source_moji) {
@@ -559,7 +695,7 @@
 </head>
 	<body>
 	<div id="id_header">
-		■□■□　VRChat 情報取得ツールVer0.04　□■□■
+		■□■□　VRChat 情報取得ツールVer0.05　□■□■
 	</div>
 	
 	<BR>
@@ -571,16 +707,21 @@
 		　種類：
 		　　<input type="radio"  name="info_type" value="self_info">[0]ユーザー情報<BR>
 		　	<input type="radio"  name="info_type" value="friend_list_online" checked>[A]フレンド一覧(オンライン)　
-		　	<input type="radio"  name="info_type" value="friend_1">[C]フレンド操作＜相手から＞　<BR>
+		　	<input type="radio"  name="info_type" value="friend_1">[C]フレンド操作＜相手から＞<br>
 		　	<input type="radio"  name="info_type" value="friend_list_offline">[B]フレンド一覧(オフライン)　
-		　	<input type="radio"  name="info_type" value="friend_2">[D]フレンド操作＜自分から＞<BR>
+		　	<input type="radio"  name="info_type" value="friend_2">[D]フレンド操作＜自分から＞
 		　	<input type="radio"  name="info_type" value="friend_list_all">[E]フレンド全員(簡易表示)　<BR><BR>
-		　　※[E]は、[A][B][C][D]取得後に実行推奨<BR>
-		　　※[A]と[B]は、ユーザー数が多いと時間がかかります。
+		　　※[A]と[B]は、ユーザー数が多いと時間がかかります。　　　　※[E]は、[A][B][C][D]取得後に実行推奨。
 		<!--出力ファイル名：<input id="id_output" value="output.txt">-->
-		<BR>
-		<BR>
-		<button onclick="get_information()" style="height:30px;width:100px">取得</button>
+		<BR><BR>
+		　取得インターバル：
+		　　<input type="radio"  name="repeat_type" value="no_repeat" checked>一回だけ
+		　	<input type="radio"  name="repeat_type" value="1min_repeat" >１分おき　
+		　	<input type="radio"  name="repeat_type" value="3min_repeat" >３分おき　
+		　	<input type="radio"  name="repeat_type" value="5min_repeat" >５分おき　
+		　	<input type="radio"  name="repeat_type" value="10min_repeat" >10分おき　
+		<BR><BR>
+		<span id="id_interface_button"><button onclick="get_information()" style="height:30px;width:100px">取得</button></span>　　<span id="id_repat_time"></span>
 	</div>
 	
 	<BR><BR>
