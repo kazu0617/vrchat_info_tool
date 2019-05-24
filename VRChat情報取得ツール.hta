@@ -217,7 +217,7 @@
 		var result="";
 		
 		result += "<table><th>日時</th><th>種類</th><th>from</th><th>to</th>"
-		for(var i=0;i<obj.length;i++){
+		for(var i=obj.length-1;i>=0;i--){
 		result += "<tr height='10'>"
 		result += "<td width='200' align='center'>"
 				+obj[i].created+"</td><td width='100' align='center'>"
@@ -337,7 +337,7 @@
 		var result="";
 		
 		result += "<table><th>NO.</th><th>ID</th><th>サムネイル</th><th>ユーザー名</th><th>表示名</th><th>操作種類</th><th>日付</th>"
-		for(var i=0;i<obj.friends.length;i++){
+		for(var i=obj.friends.length-1;i>=0;i--){
 			var friend_obj = find_name_by_id(obj.friends[i])
 			var friend_ope_obj = find_friend_name_by_id(obj.friends[i])
 		result += "<tr height='10'>"
