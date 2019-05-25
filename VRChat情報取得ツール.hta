@@ -423,10 +423,15 @@
 	function display_info_friend_all(obj) {
 		var result="";
 		
-		result += "<table><th>NO.</th><th>ID</th><th>サムネイル</th><th>表示名<BR>ユーザー名</th><th>操作種類<BR>操作日付</th><th>交流メモ　　<span id='id_interface_friend_save_button'><input type='file' id='id_load_friend_memo' name='id_load_friend_memo_file' style='display:none'></input><button onclick='load_friend_memo()' style='height:30px;width:100px'>読込</button><button onclick='save_friend_memo()' style='height:30px;width:100px'>保存</button></span></th>"
+		result += "<table><th>NO.</th><th>ID</th><th>サムネイル</th><th>表示名<BR>ユーザー名</th><th>操作種類<BR>操作日付</th><th>交流メモ　　<span id='id_interface_friend_save_button'><input type='file' id='id_load_friend_memo' name='id_load_friend_memo_file' style='display:none'></input><button onclick='load_friend_memo()' style='height:30px;width:100px'>ファイル読込</button><button onclick='save_friend_memo()' style='height:30px;width:100px'>ファイル保存</button></span></th>"
 		for(var i=obj.friends.length-1;i>=0;i--){
 			var friend_obj = find_name_by_id(obj.friends[i])
 			var friend_ope_obj = find_friend_name_by_id(obj.friends[i])
+			var obj_friend_memo = obj_friends_memo[obj.friends[i]];
+			var friend_memo = ""
+			if(obj_friend_memo){
+				friend_memo = obj_friend_memo.memo;
+			}
 		result += "<tr height='10'>"
 		result += "<td width='30' align='center'>"
 				+(i+1)+"</td><td width='100' align='center'>"
@@ -436,7 +441,7 @@
 				+friend_obj.username+"</td><td width='200' align='center'><B>"
 				+friend_ope_obj.type+"</B><BR><BR>"
 				+friend_ope_obj.created+"</td>"
-				+"<td width='200' align='center'><textarea id ="+"id_friend_memo/"+obj.friends[i]+" name ='friend_memo' rows='5' cols='40'>"+""+"</textarea></td>"
+				+"<td width='200' align='center'><textarea id ="+"id_friend_memo/"+obj.friends[i]+" name ='friend_memo' rows='5' cols='40'>"+friend_memo+"</textarea></td>"
 		result += "</tr>"
 		}
 		result += "</table>";
@@ -474,15 +479,18 @@
 		reader.readAsText(obj_file_load.files[0], 'UTF-8');
 		
 	}
-	
-	function save_friend_memo(){
-	
+	function temp_save_friend_memo(){
 		var var_friend_memo_list 	= document.getElementsByName('friend_memo');
 
 		for(var i=0;i<var_friend_memo_list.length;i++){
 			var friend_obj = find_name_by_id(var_friend_memo_list[i].id.split('/')[1])
 			obj_friends_memo[var_friend_memo_list[i].id.split('/')[1]] = {"username":friend_obj.username,"displayName":friend_obj.displayName,memo:var_friend_memo_list[i].value};
 		}
+	}
+	
+	function save_friend_memo(){
+	
+		temp_save_friend_memo();
 		
 		//update_status(JSON.stringify(obj_friends_memo));
 		
@@ -914,6 +922,7 @@
 			g_state_pre = "state_get_pre_data_1";
 		}
 		if(g_state_normal == "state_stanby"){
+			temp_save_friend_memo();
 			g_state_normal = "state_get_data";
 		}
 	}
