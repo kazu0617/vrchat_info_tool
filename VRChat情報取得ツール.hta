@@ -1,16 +1,16 @@
 <!--
-î•ñæ“¾ƒc[ƒ‹Ver0.05
-»ìÒ:‚Ì‚Ì @nonogame5656
-»ì“úF2019”N5Œ14“ú
-XV“úF2019”N5Œ24“ú
+æƒ…å ±å–å¾—ãƒ„ãƒ¼ãƒ«Ver0.06
+è£½ä½œè€…:ã®ã® @nonogame5656
+è£½ä½œæ—¥ï¼š2019å¹´5æœˆ14æ—¥
+æ›´æ–°æ—¥ï¼š2019å¹´5æœˆ25æ—¥
 -->
 
 
 <!DOCTYPE html>
 <html>
 <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=8 ; IE=9" charset="utf-8" />
-<title>VRChat î•ñæ“¾ƒc[ƒ‹Ver0.05</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" charset="utf-8" />
+<title>VRChat æƒ…å ±å–å¾—ãƒ„ãƒ¼ãƒ«Ver0.06</title>
 <style type="text/css">
     table { table-layout:fixed }
     td { background-color:#fff1ff }
@@ -27,6 +27,7 @@
 	var obj_friends_ope_1 = "";
 	var obj_friends_ope_2 = "";
 	var obj_user = "";
+	var obj_friends_memo = {};
 	
 	var obj_world_recent="";
 	var obj_world_favorites="";
@@ -46,13 +47,13 @@
 	
 	var main_loop = function(){
 	
-	//update_status("g_state_preF"+g_state_pre+"  g_state_normalF"+g_state_normal+"  g_stateF"+g_state);
+	//update_status("g_state_preï¼š"+g_state_pre+"  g_state_normalï¼š"+g_state_normal+"  g_stateï¼š"+g_state);
 	
 	switch(g_state){
 	case "state_start":
 		switch(g_state_pre){
 		case "state_get_pre_data_1":
-			document.getElementById('id_repat_time').innerHTML ="æ“¾’†"
+			document.getElementById('id_repat_time').innerHTML ="å–å¾—ä¸­"
 			get_APIkey();//'JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26'
 			break;
 		case "state_get_pre_data_2":
@@ -73,9 +74,9 @@
 		switch(g_state_normal){
 			case "state_stanby":
 			if(var_repeat_interval){
-				document.getElementById('id_repat_time').innerHTML = "Ÿ‚Ìæ“¾‚Ü‚ÅF"+parseInt((var_repeat_interval - (Date.now() - var_reapt_start))/1000)+"•b";
+				document.getElementById('id_repat_time').innerHTML = "æ¬¡ã®å–å¾—ã¾ã§ï¼š"+parseInt((var_repeat_interval - (Date.now() - var_reapt_start))/1000)+"ç§’";
 				if((var_repeat_interval - (Date.now() - var_reapt_start))<0){
-					update_status("ƒCƒ“ƒ^[ƒoƒ‹‚É‚æ‚éæ“¾:");
+					update_status("ã‚¤ãƒ³ã‚¿ãƒ¼ãƒãƒ«ã«ã‚ˆã‚‹å–å¾—:");
 					g_state_normal = "state_get_data";
 					var_reapt_start = Date.now();
 				}
@@ -85,7 +86,7 @@
 			break;
 		case "state_get_data":
 			g_state_normal = "state_wait";
-			document.getElementById('id_repat_time').innerHTML ="æ“¾’†"
+			document.getElementById('id_repat_time').innerHTML ="å–å¾—ä¸­"
 			get_vrchat_info(g_apiKey);
 			break;
 		case "state_wait":
@@ -104,7 +105,7 @@
 	
 	};
     	
-    //‰Šúİ’è
+    //åˆæœŸè¨­å®š
     function init(){
         window.resizeTo(1200,1200);
         setInterval(main_loop, 100);
@@ -224,10 +225,10 @@
 			}else{
 			obj_world_count[obj_friends_online[i].location.split(":")[0]] +=1;
 			}
-			//update_status("world”F"+obj_friends_online[i].location.split(":")[0]+" "+obj_world_count[obj_friends_online[i].location.split(":")[0]]);
+			//update_status("worldæ•°ï¼š"+obj_friends_online[i].location.split(":")[0]+" "+obj_world_count[obj_friends_online[i].location.split(":")[0]]);
 		}
 		
-		update_status("—ñ”F"+obj_friends_online.length);
+		update_status("åˆ—æ•°ï¼š"+obj_friends_online.length);
       obj_friends_online = obj_friends_online.sort(function(a, b){
       var x = obj_world_count[a.location.split(":")[0]];
       var y = obj_world_count[b.location.split(":")[0]];
@@ -247,6 +248,7 @@
     });
     }
     
+	
 	function find_world_name_by_id(id) {
 		for(var i=0;i<obj_world_recent.length;i++){
 			if(obj_world_recent[i].id == id){
@@ -301,7 +303,7 @@
 	function display_info_friend(obj) {
 		var result="";
 		
-		result += "<table><th>“ú</th><th>í—Ş</th><th>from</th><th>to</th>"
+		result += "<table><th>æ—¥æ™‚</th><th>ç¨®é¡</th><th>from</th><th>to</th>"
 		for(var i=obj.length-1;i>=0;i--){
 		result += "<tr height='10'>"
 		result += "<td width='200' align='center'>"
@@ -313,20 +315,20 @@
 		}
 		result += "</table>";
 		msg_out(result);
-		update_status("—ñ”F"+obj.length)
+		update_status("åˆ—æ•°ï¼š"+obj.length)
 	}
 	
 	
 	function display_info_user(obj) {
 		var result="";
 		
-		result += "<table><th>î•ñ</th><th>ƒf[ƒ^</th>"
+		result += "<table><th>æƒ…å ±</th><th>ãƒ‡ãƒ¼ã‚¿</th>"
 		result += "<tr height='10'>"
-		result += "<td width='200' align='center'>ƒtƒŒƒ“ƒh”</td><td width='220' align='center'>"+obj.friends.length+"</td>"
+		result += "<td width='200' align='center'>ãƒ•ãƒ¬ãƒ³ãƒ‰æ•°</td><td width='220' align='center'>"+obj.friends.length+"</td>"
 		result += "</tr><tr height='10'>"
 		result += "<td width='200' align='center'>ID</td><td width='220' align='center'>"+obj.id+"</td>"
 		result += "</tr><tr height='10'>"
-		result += "<td width='200' align='center'>ƒTƒ€ƒlƒCƒ‹</td><td width='220' align='center'><img src=\""+obj.currentAvatarThumbnailImageUrl+"\" width=\"200\"></td>"
+		result += "<td width='200' align='center'>ã‚µãƒ ãƒã‚¤ãƒ«</td><td width='220' align='center'><img src=\""+obj.currentAvatarThumbnailImageUrl+"\" width=\"200\"></td>"
 		result += "</tr><tr height='10'>"
 		result += "<td width='200' align='center'>username</td><td width='220' align='center'>"+obj.username+"</td>"
 		result += "</tr><tr height='10'>"
@@ -335,7 +337,7 @@
 		result += "</table>";
 		result += "<br>"
 					if(obj.pastDisplayNames.length){
-		result += "<table><th>•ÏX“ú</th><th>‰ß‹‚Ì•\¦–¼</th>"
+		result += "<table><th>å¤‰æ›´æ—¥</th><th>éå»ã®è¡¨ç¤ºå</th>"
 		result += "<tr height='10'>"
 		for(var i=0;i<obj.pastDisplayNames.length;i++){
 			result += "<tr height='10'>"
@@ -346,7 +348,7 @@
 		}
 		result += "<br>"
 		
-		result += "<table><th>ƒ^ƒO–¼ˆê——</th>"
+		result += "<table><th>ã‚¿ã‚°åä¸€è¦§</th>"
 		result += "<tr height='10'>"
 		for(var i=0;i<obj.tags.length;i++){
 		result += "<tr height='10'>"
@@ -363,7 +365,7 @@
 	function display_info_friend_online(obj) {
 		var result="";
 		
-		result += "<table><th>NO.</th><th>ƒTƒ€ƒlƒCƒ‹</th><th>•\¦–¼<BR>ƒ†[ƒU[–¼</th><th>êŠ</th><th>ƒTƒ€ƒlƒCƒ‹</th>"
+		result += "<table><th>NO.</th><th>ã‚µãƒ ãƒã‚¤ãƒ«</th><th>è¡¨ç¤ºå<BR>ãƒ¦ãƒ¼ã‚¶ãƒ¼å</th><th>å ´æ‰€</th><th>ã‚µãƒ ãƒã‚¤ãƒ«</th>"
 		for(var i=0;i<obj.length;i++){
 		var world_info="";
 		if(obj[i].location=="private"){
@@ -375,7 +377,7 @@
 			if(world_obj_info.name !=""){
 				world_info = "<td width='500' align='center'><B>"+world_obj_info.name+"</B><BR> (" +obj[i].location.split('~')[0]+")</td>";
 			}else{
-				world_info = "<td width='500' align='center'><B>"+"<a href=\"#\" onclick=\"OnGetWorldName("+i+");return false;\">" +"ƒ[ƒ‹ƒh‚Ì–¼‘O‚ÆƒTƒ€ƒlƒCƒ‹æ“¾"+"</a></B><BR> (" +obj[i].location.split('~')[0]+")</td>";
+				world_info = "<td width='500' align='center'><B>"+"<a href=\"#\" onclick=\"OnGetWorldName("+i+");return false;\">" +"ãƒ¯ãƒ¼ãƒ«ãƒ‰ã®åå‰ã¨ã‚µãƒ ãƒã‚¤ãƒ«å–å¾—"+"</a></B><BR> (" +obj[i].location.split('~')[0]+")</td>";
 			}
 			if(world_obj_info.thumbnailImageURL !=""){
 				world_info += "<td width='110' align='center'>"+"<img src=\""+world_obj_info.imageUrl+"\" width=\"100\"></td>"
@@ -395,14 +397,14 @@
 		}
 		result += "</table>";
 		msg_out(result);
-		//update_status("—ñ”F"+obj.length)
+		//update_status("åˆ—æ•°ï¼š"+obj.length)
 
 	}
 	
 	function display_info_friend_offline(obj) {
 		var result="";
 		
-		result += "<table><th>NO.</th><th>ƒTƒ€ƒlƒCƒ‹</th><th>•\¦–¼<BR>ƒ†[ƒU[–¼</th><th>êŠ</th>"
+		result += "<table><th>NO.</th><th>ã‚µãƒ ãƒã‚¤ãƒ«</th><th>è¡¨ç¤ºå<BR>ãƒ¦ãƒ¼ã‚¶ãƒ¼å</th><th>å ´æ‰€</th>"
 		result += "<tr height='10'>"
 		for(var i=0;i<obj.length;i++){
 		result += "<td width='30' align='center'>"
@@ -415,13 +417,13 @@
 		}
 		result += "</table>";
 		msg_out(result);
-		//update_status("—ñ”F"+obj.length)
+		//update_status("åˆ—æ•°ï¼š"+obj.length)
 	}
 	
 	function display_info_friend_all(obj) {
 		var result="";
 		
-		result += "<table><th>NO.</th><th>ID</th><th>ƒTƒ€ƒlƒCƒ‹</th><th>•\¦–¼<BR>ƒ†[ƒU[–¼</th><th>‘€ìí—Ş</th><th>‘€ì“ú•t</th>"
+		result += "<table><th>NO.</th><th>ID</th><th>ã‚µãƒ ãƒã‚¤ãƒ«</th><th>è¡¨ç¤ºå<BR>ãƒ¦ãƒ¼ã‚¶ãƒ¼å</th><th>æ“ä½œç¨®é¡<BR>æ“ä½œæ—¥ä»˜</th><th>äº¤æµãƒ¡ãƒ¢ã€€ã€€<span id='id_interface_friend_save_button'><input type='file' id='id_load_friend_memo' name='id_load_friend_memo_file' style='display:none'></input><button onclick='load_friend_memo()' style='height:30px;width:100px'>èª­è¾¼</button><button onclick='save_friend_memo()' style='height:30px;width:100px'>ä¿å­˜</button></span></th>"
 		for(var i=obj.friends.length-1;i>=0;i--){
 			var friend_obj = find_name_by_id(obj.friends[i])
 			var friend_ope_obj = find_friend_name_by_id(obj.friends[i])
@@ -431,17 +433,62 @@
 				+"<font size=\"2\">"+obj.friends[i]+"</font></td><td width='110' align='center'>"
 				+"<img src=\""+friend_obj.currentAvatarThumbnailImageUrl+"\" width=\"100\"></td><td width='200' align='center'><font size='4'><B>"
 				+friend_obj.displayName+"</B></font><br><br>"
-				+friend_obj.username+"</td><td width='200' align='center'>"
-				+friend_ope_obj.type+"</td><td width='200' align='center'>"
+				+friend_obj.username+"</td><td width='200' align='center'><B>"
+				+friend_ope_obj.type+"</B><BR><BR>"
 				+friend_ope_obj.created+"</td>"
+				+"<td width='200' align='center'><textarea id ="+"id_friend_memo/"+obj.friends[i]+" name ='friend_memo' rows='5' cols='40'>"+""+"</textarea></td>"
 		result += "</tr>"
 		}
 		result += "</table>";
 		msg_out(result);
-		update_status("—ñ”F"+obj.friends.length)
+		update_status("åˆ—æ•°ï¼š"+obj.friends.length)
 	}
     
+	function load_friend_memo(){
+		var obj_file_load = document.getElementById('id_load_friend_memo');
+		obj_file_load.click();
+		
+		if(obj_file_load.files[0]==null){
+			return false;
+		}
+		
+		//update_status("èª­è¾¼ãƒ•ã‚¡ã‚¤ãƒ«åï¼š"+obj_file_load.files[0])
+		var reader = new FileReader();
 
+		reader.onload = function() {
+			obj_friends_memo = JSON.parse(reader.result);
+			//update_status("LOADï¼š"+reader.result)
+			
+			for(var key in obj_friends_memo){
+				var var_memo 	= document.getElementById('id_friend_memo/'+key);
+				if(var_memo != null){
+					if(var_memo.value == ""){
+						var_memo.value = obj_friends_memo[key].memo;
+					}else{
+						var_memo.value = var_memo.value+"\n"+obj_friends_memo[key].memo;
+					}
+				}
+			}
+		}
+		
+		reader.readAsText(obj_file_load.files[0], 'UTF-8');
+		
+	}
+	
+	function save_friend_memo(){
+	
+		var var_friend_memo_list 	= document.getElementsByName('friend_memo');
+
+		for(var i=0;i<var_friend_memo_list.length;i++){
+			var friend_obj = find_name_by_id(var_friend_memo_list[i].id.split('/')[1])
+			obj_friends_memo[var_friend_memo_list[i].id.split('/')[1]] = {"username":friend_obj.username,"displayName":friend_obj.displayName,memo:var_friend_memo_list[i].value};
+		}
+		
+		//update_status(JSON.stringify(obj_friends_memo));
+		
+		navigator.msSaveOrOpenBlob(new Blob([JSON.stringify(obj_friends_memo)], {type: 'text/plain'}),"vrchat_friends_memo.json");
+
+	}
 
 	function get_vrchat_info_friend_1(apiKey) {
 	    var xhr 			= new XMLHttpRequest();
@@ -451,8 +498,8 @@
 	    var var_output 		= document.getElementById('id_output').value;
 	    
 		
-		//update_status("apiKeyF"+apiKey);
-		//update_status("æ“¾í—ŞF"+var_info_type);
+		//update_status("apiKeyï¼š"+apiKey);
+		//update_status("å–å¾—ç¨®é¡ï¼š"+var_info_type);
 		
 		var xhrURL		= 'https://api.vrchat.cloud/api/1/auth/user/playermoderated'+ "?apiKey="+apiKey;
 
@@ -462,7 +509,7 @@
 
 	    var auth_info 	= enc_base64(var_user+":"+var_pass);
 
-	    //update_status("BASE64F"+auth_info);
+	    //update_status("BASE64ï¼š"+auth_info);
 	    
 		xhr.onreadystatechange = function(){
 			if(this.readyState==4){
@@ -492,8 +539,8 @@
 	    var var_output 		= document.getElementById('id_output').value;
 	    
 		
-		//update_status("apiKeyF"+apiKey);
-		//update_status("æ“¾í—ŞF"+var_info_type);
+		//update_status("apiKeyï¼š"+apiKey);
+		//update_status("å–å¾—ç¨®é¡ï¼š"+var_info_type);
 		
 		var xhrURL		= 'https://api.vrchat.cloud/api/1/auth/user/playermoderations'+ "?apiKey="+apiKey;
 
@@ -503,7 +550,7 @@
 
 	    var auth_info 	= enc_base64(var_user+":"+var_pass);
 
-	    //update_status("BASE64F"+auth_info);
+	    //update_status("BASE64ï¼š"+auth_info);
 	    
 		xhr.onreadystatechange = function(){
 			if(this.readyState==4){
@@ -533,8 +580,8 @@
 	    var var_output 		= document.getElementById('id_output').value;
 	    
 		
-		//update_status("apiKeyF"+apiKey);
-		//update_status("æ“¾í—ŞF"+var_info_type);
+		//update_status("apiKeyï¼š"+apiKey);
+		//update_status("å–å¾—ç¨®é¡ï¼š"+var_info_type);
 		
 		var xhrURL		= 'https://api.vrchat.cloud/api/1/auth/user'+ "?apiKey="+apiKey;
 
@@ -545,7 +592,7 @@
 
 	    var auth_info 	= enc_base64(var_user+":"+var_pass);
 
-	    //update_status("BASE64F"+auth_info);
+	    //update_status("BASE64ï¼š"+auth_info);
 	    
 		xhr.onreadystatechange = function(){
 			if(this.readyState==4){
@@ -576,8 +623,8 @@
 	    var var_output 		= document.getElementById('id_output').value;
 	    
 		
-		//update_status("apiKeyF"+apiKey);
-		//update_status("æ“¾í—ŞF"+var_info_type);
+		//update_status("apiKeyï¼š"+apiKey);
+		//update_status("å–å¾—ç¨®é¡ï¼š"+var_info_type);
 		
 		var xhrURL		=  'https://api.vrchat.cloud/api/1/auth/user/friends'+ "?apiKey="+apiKey+ "&offset="+(100*request_counter)+ "&offline=false";
 
@@ -587,7 +634,7 @@
 
 	    var auth_info 	= enc_base64(var_user+":"+var_pass);
 
-	    //update_status("BASE64F"+auth_info);
+	    //update_status("BASE64ï¼š"+auth_info);
 	    
 		xhr.onreadystatechange = function(){
 			if(this.readyState==4){
@@ -602,7 +649,7 @@
 							}
 						}
 						if(obj.length==100){
-							update_status("ƒŠƒXƒgæ“¾Fƒ"+(100*request_counter));
+							update_status("ãƒªã‚¹ãƒˆå–å¾—ï¼šï¼œ"+(100*request_counter));
 							get_vrchat_info_friend_list_online(apiKey);
 						}else{
 							obj = obj_temp;
@@ -635,8 +682,8 @@
 	    var var_output 		= document.getElementById('id_output').value;
 	    
 		
-		//update_status("apiKeyF"+apiKey);
-		//update_status("æ“¾í—ŞF"+var_info_type);
+		//update_status("apiKeyï¼š"+apiKey);
+		//update_status("å–å¾—ç¨®é¡ï¼š"+var_info_type);
 		
 		var xhrURL		= 'https://api.vrchat.cloud/api/1/auth/user/friends'+ "?apiKey="+apiKey+ "&offset="+(100*request_counter)+ "&offline=true";
 		request_counter+=1;
@@ -648,7 +695,7 @@
 
 	    var auth_info 	= enc_base64(var_user+":"+var_pass);
 
-	    //update_status("BASE64F"+auth_info);
+	    //update_status("BASE64ï¼š"+auth_info);
 	    
 		xhr.onreadystatechange = function(){
 			if(this.readyState==4){
@@ -663,7 +710,7 @@
 							}
 						}
 						if(obj.length==100){
-							update_status("ƒŠƒXƒgæ“¾Fƒ"+(100*request_counter));
+							update_status("ãƒªã‚¹ãƒˆå–å¾—ï¼šï¼œ"+(100*request_counter));
 							get_vrchat_info_friend_list_offline(apiKey);
 						}else{
 							obj = obj_temp;
@@ -783,7 +830,7 @@
 	    var xhr 		= new XMLHttpRequest();
 		var xhrURL		= 'https://api.vrchat.cloud/api/1/worlds/'+obj_friends_online[no].location.split(":")[0]+ "?apiKey="+g_apiKey;
 		var xhrMethod	= 'GET'
-		//update_status("URLF"+xhrURL);
+		//update_status("URLï¼š"+xhrURL);
 		xhr.onreadystatechange = function(){
 			if(this.readyState==4){
 				if(xhr.responseText){
@@ -800,7 +847,7 @@
 	    
 	}
 	function stop_repeat() {
-		document.getElementById('id_interface_button').innerHTML = "<button onclick=\"get_information()\" style=\"height:30px;width:100px\">æ“¾</button>";
+		document.getElementById('id_interface_button').innerHTML = "<button onclick=\"get_information()\" style=\"height:30px;width:100px\">å–å¾—</button>";
 		document.getElementById('id_repat_time').innerHTML =""
 		var_repeat_interval =  0;
 	}
@@ -808,11 +855,11 @@
 	function get_information() {
 	
 	    if(document.getElementById('id_user').value == ""){
-	    	update_status("ƒ†[ƒU[–¼‚ğ“ü—Í‚µ‚Ä‚­‚¾‚³‚¢")
+	    	update_status("<font color='blue'>ãƒ¦ãƒ¼ã‚¶ãƒ¼åã‚’å…¥åŠ›ã—ã¦ãã ã•ã„</font>")
 	    	return false;
 	    }
 	    if(document.getElementById('id_pass').value == ""){
-	    	update_status("ƒpƒXƒ[ƒh‚ğ“ü—Í‚µ‚Ä‚­‚¾‚³‚¢")
+	    	update_status("<font color='blue'>ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„</font>")
 	    	return false;
 	    }
 	    
@@ -858,9 +905,9 @@
 		var_reapt_start = Date.now();
 	    
 	    if(var_repeat_type == "no_repeat"){
-	    	document.getElementById('id_interface_button').innerHTML = "<button onclick=\"get_information()\" style=\"height:30px;width:100px\">æ“¾</button>";
+	    	document.getElementById('id_interface_button').innerHTML = "<button onclick=\"get_information()\" style=\"height:30px;width:100px\">å–å¾—</button>";
 	    }else{
-	    	document.getElementById('id_interface_button').innerHTML = "@@@@@@@@@@@<button onclick=\"stop_repeat()\" style=\"height:30px;width:100px\">’â~</button>";
+	    	document.getElementById('id_interface_button').innerHTML = "ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€ã€€<button onclick=\"stop_repeat()\" style=\"height:30px;width:100px\">åœæ­¢</button>";
 	    }
 	    
 	    if(g_state == "state_start"){
@@ -936,44 +983,44 @@
 </head>
 	<body>
 	<div id="id_header">
-		¡ ¡ @VRChat î•ñæ“¾ƒc[ƒ‹Ver0.05@ ¡ ¡
+		â– â–¡â– â–¡ã€€VRChat æƒ…å ±å–å¾—ãƒ„ãƒ¼ãƒ«Ver0.06ã€€â–¡â– â–¡â– 
 	</div>
 	
 	<BR>
 	
-	<div id="id_interface">¡“ü—ÍF
-		ƒ†[ƒU[–¼F<input id="id_user">
-		@ƒpƒXƒ[ƒhF<input id="id_pass" type="password"><BR><BR>
-		@
-		@í—ŞF
-		@@<input type="radio"  name="info_type" value="self_info">[0]ƒ†[ƒU[î•ñ<BR>
-		@	<input type="radio"  name="info_type" value="friend_list_online" checked>[A]ƒtƒŒƒ“ƒhˆê——(ƒIƒ“ƒ‰ƒCƒ“)@
-		@	<input type="radio"  name="info_type" value="friend_1">[C]ƒtƒŒƒ“ƒh‘€ìƒ‘Šè‚©‚ç„<br>
-		@	<input type="radio"  name="info_type" value="friend_list_offline">[B]ƒtƒŒƒ“ƒhˆê——(ƒIƒtƒ‰ƒCƒ“)@
-		@	<input type="radio"  name="info_type" value="friend_2">[D]ƒtƒŒƒ“ƒh‘€ìƒ©•ª‚©‚ç„
-		@	<input type="radio"  name="info_type" value="friend_list_all">[E]ƒtƒŒƒ“ƒh‘Sˆõ(ŠÈˆÕ•\¦)@<BR><BR>
-		@@¦[A],[B],[E]‚ÍAƒ†[ƒU[”‚ª‘½‚¢‚ÆŠÔ‚ª‚©‚©‚è‚Ü‚·B
-		<!--o—Íƒtƒ@ƒCƒ‹–¼F<input id="id_output" value="output.txt">-->
+	<div id="id_interface">â– å…¥åŠ›ï¼š
+		ãƒ¦ãƒ¼ã‚¶ãƒ¼åï¼š<input id="id_user">
+		ã€€ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ï¼š<input id="id_pass" type="password"><BR><BR>
+		ã€€
+		ã€€ç¨®é¡ï¼š
+		ã€€ã€€<input type="radio"  name="info_type" value="self_info">[0]ãƒ¦ãƒ¼ã‚¶ãƒ¼æƒ…å ±<BR>
+		ã€€	<input type="radio"  name="info_type" value="friend_list_online" checked>[A]ãƒ•ãƒ¬ãƒ³ãƒ‰ä¸€è¦§(ã‚ªãƒ³ãƒ©ã‚¤ãƒ³)ã€€
+		ã€€	<input type="radio"  name="info_type" value="friend_1">[C]ãƒ•ãƒ¬ãƒ³ãƒ‰æ“ä½œï¼œç›¸æ‰‹ã‹ã‚‰ï¼<br>
+		ã€€	<input type="radio"  name="info_type" value="friend_list_offline">[B]ãƒ•ãƒ¬ãƒ³ãƒ‰ä¸€è¦§(ã‚ªãƒ•ãƒ©ã‚¤ãƒ³)ã€€
+		ã€€	<input type="radio"  name="info_type" value="friend_2">[D]ãƒ•ãƒ¬ãƒ³ãƒ‰æ“ä½œï¼œè‡ªåˆ†ã‹ã‚‰ï¼
+		ã€€	<input type="radio"  name="info_type" value="friend_list_all">[E]ãƒ•ãƒ¬ãƒ³ãƒ‰å±¥æ­´ã€€<BR><BR>
+		ã€€ã€€â€»[A],[B],[E]ã¯ã€ãƒ¦ãƒ¼ã‚¶ãƒ¼æ•°ãŒå¤šã„ã¨æ™‚é–“ãŒã‹ã‹ã‚Šã¾ã™ã€‚
+		<!--å‡ºåŠ›ãƒ•ã‚¡ã‚¤ãƒ«åï¼š<input id="id_output" value="output.txt">-->
 		<BR><BR>
-		@æ“¾ƒCƒ“ƒ^[ƒoƒ‹F
-		@@<input type="radio"  name="repeat_type" value="no_repeat" checked>ˆê‰ñ‚¾‚¯
-		@	<input type="radio"  name="repeat_type" value="1min_repeat" >‚P•ª‚¨‚«@
-		@	<input type="radio"  name="repeat_type" value="3min_repeat" >‚R•ª‚¨‚«@
-		@	<input type="radio"  name="repeat_type" value="5min_repeat" >‚T•ª‚¨‚«@
-		@	<input type="radio"  name="repeat_type" value="10min_repeat" >10•ª‚¨‚«@
-		@	<input type="radio"  name="repeat_type" value="30min_repeat" >30•ª‚¨‚«@
+		ã€€å–å¾—ã‚¤ãƒ³ã‚¿ãƒ¼ãƒãƒ«ï¼š
+		ã€€ã€€<input type="radio"  name="repeat_type" value="no_repeat" checked>ä¸€å›ã ã‘
+		ã€€	<input type="radio"  name="repeat_type" value="1min_repeat" >ï¼‘åˆ†ãŠãã€€
+		ã€€	<input type="radio"  name="repeat_type" value="3min_repeat" >ï¼“åˆ†ãŠãã€€
+		ã€€	<input type="radio"  name="repeat_type" value="5min_repeat" >ï¼•åˆ†ãŠãã€€
+		ã€€	<input type="radio"  name="repeat_type" value="10min_repeat" >10åˆ†ãŠãã€€
+		ã€€	<input type="radio"  name="repeat_type" value="30min_repeat" >30åˆ†ãŠãã€€
 		<BR><BR>
-		<span id="id_interface_button"><button onclick="get_information()" style="height:30px;width:100px">æ“¾</button></span>@@<span id="id_repat_time"></span>
+		<span id="id_interface_button"><button onclick="get_information()" style="height:30px;width:100px">å–å¾—</button></span>ã€€ã€€<span id="id_repat_time"></span>
 	</div>
 	
 	<BR><BR>
 	
-	<div id="id_output">¡æ“¾î•ñF
-		<div id="id_output_data">@–¢æ“¾</div>
+	<div id="id_output">â– å–å¾—æƒ…å ±ï¼š
+		<div id="id_output_data">ã€€æœªå–å¾—</div>
 	</div>
 	<br>
 	<br>
-	<div id="id_console">¡æ“¾ƒƒOF
+	<div id="id_console">â– å–å¾—ãƒ­ã‚°ï¼š
 		<div id="id_status"></div>
 	</div>
 
