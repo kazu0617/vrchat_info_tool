@@ -1,5 +1,5 @@
 <!--
-VRChatフレンド手帳　Ver0.07
+VRChatフレンド手帳　Ver0.08
 製作者:のの @nonogame5656
 製作日：2019年5月14日
 更新日：2019年5月25日
@@ -10,7 +10,7 @@ VRChatフレンド手帳　Ver0.07
 <html>
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" charset="utf-8" />
-<title>VRChatフレンド手帳　Ver0.07</title>
+<title>VRChatフレンド手帳　Ver0.08</title>
 <style type="text/css">
     table { table-layout:fixed }
     td { background-color:#fff1ff }
@@ -236,20 +236,20 @@ VRChatフレンド手帳　Ver0.07
 		}
     }
     
-	function sort_friend_by_world() {
+	function sort_friend_by_world(obj) {
 		
 		obj_world_count = {};
-		for(var i=0;i<obj_friends_online.length;++i){
-		if(!obj_world_count[obj_friends_online[i].location.split(":")[0]]){
-			obj_world_count[obj_friends_online[i].location.split(":")[0]] =1;
+		for(var i=0;i<obj.length;++i){
+		if(!obj_world_count[obj[i].location.split(":")[0]]){
+			obj_world_count[obj[i].location.split(":")[0]] =1;
 			}else{
-			obj_world_count[obj_friends_online[i].location.split(":")[0]] +=1;
+			obj_world_count[obj[i].location.split(":")[0]] +=1;
 			}
-			//update_status("world数："+obj_friends_online[i].location.split(":")[0]+" "+obj_world_count[obj_friends_online[i].location.split(":")[0]]);
+			//update_status("world数："+obj[i].location.split(":")[0]+" "+obj_world_count[obj[i].location.split(":")[0]]);
 		}
 		
-		update_status("列数："+obj_friends_online.length);
-      obj_friends_online = obj_friends_online.sort(function(a, b){
+		update_status("列数："+obj.length);
+      obj = obj.sort(function(a, b){
       var x = obj_world_count[a.location.split(":")[0]];
       var y = obj_world_count[b.location.split(":")[0]];
       if (a.location == "private"){return 1};
@@ -266,6 +266,7 @@ VRChatフレンド手帳　Ver0.07
       if (x < y) return 1;
       return 0;
     });
+    return obj;
     }
     
 	
@@ -683,8 +684,7 @@ VRChatフレンド手帳　Ver0.07
 						}else{
 							obj = obj_temp;
 							obj_temp = "";
-							obj_friends_online = obj;
-							sort_friend_by_world()
+							obj_friends_online = sort_friend_by_world(obj);
 							request_counter_online=0;
 						}
 	    		}
@@ -855,7 +855,10 @@ VRChatフレンド手帳　Ver0.07
 	    
 	}
 	function OnGetWorldName(no) {
-
+		if(g_state_normal != "state_stanby"){
+			return false;
+		}
+		
 	    var xhr 		= new XMLHttpRequest();
 		var xhrURL		= 'https://api.vrchat.cloud/api/1/worlds/'+obj_friends_online[no].location.split(":")[0]+ "?apiKey="+g_apiKey;
 		var xhrMethod	= 'GET'
@@ -1012,7 +1015,7 @@ VRChatフレンド手帳　Ver0.07
 </head>
 	<body>
 	<div id="id_header">
-		■□■□　VRChatフレンド手帳　Ver0.07　□■□■
+		■□■□　VRChatフレンド手帳　Ver0.08　□■□■
 	</div>
 	
 	<BR>
