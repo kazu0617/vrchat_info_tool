@@ -21,16 +21,19 @@
 	var var_info_type 		= "";
 	var var_repeat_type 		= "";
 	var obj_temp = "";
+	
 	var obj_friends_online = "";
 	var obj_friends_offline = "";
 	var obj_friends_ope_1 = "";
 	var obj_friends_ope_2 = "";
 	var obj_user = "";
+	
 	var obj_world_recent="";
 	var obj_world_favorites="";
 	var obj_world_active="";
 	var obj_world_add=[];
 	var obj_world_count={};
+	
 	var g_apiKey="";
 	
 	var request_counter=0;
@@ -72,7 +75,7 @@
 			if(var_repeat_interval){
 				document.getElementById('id_repat_time').innerHTML = "次の取得まで："+parseInt((var_repeat_interval - (Date.now() - var_reapt_start))/1000)+"秒";
 				if((var_repeat_interval - (Date.now() - var_reapt_start))<0){
-					update_status("インターバルによる取得");
+					update_status("インターバルによる取得:");
 					g_state_normal = "state_get_data";
 					var_reapt_start = Date.now();
 				}
@@ -86,6 +89,9 @@
 			get_vrchat_info(g_apiKey);
 			break;
 		case "state_wait":
+			if(wait_get_object()){
+				g_state_normal = "state_display";
+			}
 			break;
 		case "state_display":
 			display_info();
@@ -105,8 +111,87 @@
     }
     init();
     
-
+	function get_vrchat_info(apiKey) {
+		
+		var xhrURL		= "";
+		
+		switch(var_info_type){
+		case "friend_1":
+			obj_friends_ope_1 = "";
+			get_vrchat_info_friend_1(apiKey);
+			break;
+		case "friend_2":
+			obj_friends_ope_2 = "";
+			get_vrchat_info_friend_2(apiKey);
+			break;
+		case "self_info":
+			obj_user = "";
+			get_vrchat_info_self_info(apiKey);
+			break;
+		case "friend_list_online":
+			obj_friends_online = "";
+			get_vrchat_info_friend_list_online(apiKey);
+			break;
+		case "friend_list_offline":
+			obj_friends_offline = "";
+			get_vrchat_info_friend_list_offline(apiKey);
+			break;
+			
+		case "friend_list_all":
+			if(obj_friends_ope_1==""){
+				get_vrchat_info_friend_1(apiKey);
+			}
+			if(obj_friends_ope_2==""){
+				get_vrchat_info_friend_2(apiKey);
+			}
+			if(obj_friends_online==""){
+				get_vrchat_info_friend_list_online(apiKey);
+			}
+			if(obj_friends_offline==""){
+				get_vrchat_info_friend_list_offline(apiKey);
+			}
+			if(obj_user==""){
+				get_vrchat_info_self_info(apiKey);
+			}
+			break;
+		}
+	}
 	
+    function wait_get_object(){
+			switch(var_info_type){
+			case "friend_1":		//playermoderated 
+				if(obj_friends_ope_1){
+					return true;
+				}
+				break;
+			case "friend_2":		//playermoderations
+				if(obj_friends_ope_2){
+					return true;
+				}
+				break;
+			case "self_info":		
+				if(obj_user){
+					return true;
+				}
+				break;
+			case "friend_list_online":		
+				if(obj_friends_online){
+					return true;
+				}
+				break;
+			case "friend_list_offline":	
+				if(obj_friends_offline){
+					return true;
+				}
+				break;
+			case "friend_list_all":
+				if((obj_friends_online != "")&&(obj_friends_offline != "")&&(obj_friends_ope_1 != "")&&(obj_friends_ope_2 != "")&&(obj_user != "")){
+					return true;
+				}
+				break;
+			}
+    }
+    
     function display_info(){
 		switch(var_info_type){
 		case "friend_1":		//playermoderated 
@@ -278,11 +363,11 @@
 	function display_info_friend_online(obj) {
 		var result="";
 		
-		result += "<table><th>NO.</th><th>サムネイル</th><th>ユーザー名</th><th>表示名</th><th>場所</th><th>サムネイル</th>"
+		result += "<table><th>NO.</th><th>サムネイル</th><th>表示名<BR>ユーザー名</th><th>場所</th><th>サムネイル</th>"
 		for(var i=0;i<obj.length;i++){
 		var world_info="";
 		if(obj[i].location=="private"){
-			world_info = "<td width='500' align='center'>PRIVATE</td><td width='110' align='center'></td>";
+			world_info = "<td width='500' align='center'><B>PRIVATE</B></td><td width='110' align='center'></td>";
 		}
 		else{
 			world_obj_info = find_world_name_by_id(obj[i].location.split(':')[0]);
@@ -302,9 +387,9 @@
 		
 		result += "<td width='30' align='center'>"
 				+(i+1)+"</td><td width='110' align='center'>"
-				+"<img src=\""+obj[i].currentAvatarThumbnailImageUrl+"\" width=\"100\"></td><td width='200' align='center'>"
-				+obj[i].username+"</td><td width='200' align='center'>"
-				+obj[i].displayName+"</td>"
+				+"<img src=\""+obj[i].currentAvatarThumbnailImageUrl+"\" width=\"100\"></td><td width='200' align='center'><font size='4'><B>"
+				+obj[i].displayName+"</B></font><br><br>"
+				+obj[i].username+"</td>"
 				+world_info//
 		result += "</tr>"
 		}
@@ -317,14 +402,14 @@
 	function display_info_friend_offline(obj) {
 		var result="";
 		
-		result += "<table><th>NO.</th><th>サムネイル</th><th>ユーザー名</th><th>表示名</th><th>場所</th>"
+		result += "<table><th>NO.</th><th>サムネイル</th><th>表示名<BR>ユーザー名</th><th>場所</th>"
 		result += "<tr height='10'>"
 		for(var i=0;i<obj.length;i++){
 		result += "<td width='30' align='center'>"
 				+(i+1)+"</td><td width='110' align='center'>"
-				+"<img src=\""+obj[i].currentAvatarThumbnailImageUrl+"\" width=\"100\"></td><td width='200' align='center'>"
+				+"<img src=\""+obj[i].currentAvatarThumbnailImageUrl+"\" width=\"100\"></td><td width='200' align='center'><font size='4'><B>"
+				+obj[i].displayName+"</B></font><br><br>"
 				+obj[i].username+"</td><td width='200' align='center'>"
-				+obj[i].displayName+"</td><td width='200' align='center'>"
 				+"offline</td>"//
 		result += "</tr>"
 		}
@@ -336,7 +421,7 @@
 	function display_info_friend_all(obj) {
 		var result="";
 		
-		result += "<table><th>NO.</th><th>ID</th><th>サムネイル</th><th>ユーザー名</th><th>表示名</th><th>操作種類</th><th>日付</th>"
+		result += "<table><th>NO.</th><th>ID</th><th>サムネイル</th><th>表示名<BR>ユーザー名</th><th>操作種類</th><th>操作日付</th>"
 		for(var i=obj.friends.length-1;i>=0;i--){
 			var friend_obj = find_name_by_id(obj.friends[i])
 			var friend_ope_obj = find_friend_name_by_id(obj.friends[i])
@@ -344,9 +429,9 @@
 		result += "<td width='30' align='center'>"
 				+(i+1)+"</td><td width='100' align='center'>"
 				+"<font size=\"2\">"+obj.friends[i]+"</font></td><td width='110' align='center'>"
-				+"<img src=\""+friend_obj.currentAvatarThumbnailImageUrl+"\" width=\"100\"></td><td width='200' align='center'>"
+				+"<img src=\""+friend_obj.currentAvatarThumbnailImageUrl+"\" width=\"100\"></td><td width='200' align='center'><font size='4'><B>"
+				+friend_obj.displayName+"</B></font><br><br>"
 				+friend_obj.username+"</td><td width='200' align='center'>"
-				+friend_obj.displayName+"</td><td width='200' align='center'>"
 				+friend_ope_obj.type+"</td><td width='200' align='center'>"
 				+friend_ope_obj.created+"</td>"
 		result += "</tr>"
@@ -356,8 +441,9 @@
 		update_status("列数："+obj.friends.length)
 	}
     
-	   
-	function get_vrchat_info(apiKey) {
+
+
+	function get_vrchat_info_friend_1(apiKey) {
 	    var xhr 			= new XMLHttpRequest();
 
 	    var var_user 		= document.getElementById('id_user').value;
@@ -368,28 +454,7 @@
 		//update_status("apiKey："+apiKey);
 		//update_status("取得種類："+var_info_type);
 		
-		var xhrURL		= "";
-		
-		switch(var_info_type){
-		case "friend_1":
-			xhrURL += 'https://api.vrchat.cloud/api/1/auth/user/playermoderated'+ "?apiKey="+apiKey;
-			break;
-		case "friend_2":
-			xhrURL += 'https://api.vrchat.cloud/api/1/auth/user/playermoderations'+ "?apiKey="+apiKey;
-			break;
-		case "self_info":
-		case "friend_list_all":
-			xhrURL += 'https://api.vrchat.cloud/api/1/auth/user'+ "?apiKey="+apiKey;
-			break;
-		case "friend_list_online":
-			xhrURL += 'https://api.vrchat.cloud/api/1/auth/user/friends'+ "?apiKey="+apiKey+ "&offset="+(100*request_counter)+ "&offline=false";
-			request_counter+=1;
-			break;
-		case "friend_list_offline":
-			xhrURL += 'https://api.vrchat.cloud/api/1/auth/user/friends'+ "?apiKey="+apiKey+ "&offset="+(100*request_counter)+ "&offline=true";
-			request_counter+=1;
-			break;
-		}
+		var xhrURL		= 'https://api.vrchat.cloud/api/1/auth/user/playermoderated'+ "?apiKey="+apiKey;
 
 		//update_status(xhrURL);
 		
@@ -403,17 +468,131 @@
 			if(this.readyState==4){
 				if(xhr.responseText){
 		    		//update_status(xhr.responseText);
-					switch(var_info_type){
-					case "friend_1":
-						var obj = JSON.parse(xhr.responseText);
-						obj_friends_ope_1 = obj;
-						break;
-					case "friend_2":
-						var obj = JSON.parse(xhr.responseText);
-						obj_friends_ope_2 = obj;
-						break;
-					case "friend_list_online":
-					case "friend_list_offline":
+					var obj = JSON.parse(xhr.responseText);
+					obj_friends_ope_1 = obj;
+	    		}
+			}
+		}
+		
+	    xhr.open( xhrMethod, xhrURL );
+	    xhr.setRequestHeader('Authorization', 'Basic '+ auth_info );
+	    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+	    //xhr.responseType = 'json';
+	    
+	    xhr.send();
+	   // xhr.abort();
+
+	}
+	
+	function get_vrchat_info_friend_2(apiKey) {
+	    var xhr 			= new XMLHttpRequest();
+
+	    var var_user 		= document.getElementById('id_user').value;
+	    var var_pass 		= document.getElementById('id_pass').value;
+	    var var_output 		= document.getElementById('id_output').value;
+	    
+		
+		//update_status("apiKey："+apiKey);
+		//update_status("取得種類："+var_info_type);
+		
+		var xhrURL		= 'https://api.vrchat.cloud/api/1/auth/user/playermoderations'+ "?apiKey="+apiKey;
+
+		//update_status(xhrURL);
+		
+		var xhrMethod	= 'GET'
+
+	    var auth_info 	= enc_base64(var_user+":"+var_pass);
+
+	    //update_status("BASE64："+auth_info);
+	    
+		xhr.onreadystatechange = function(){
+			if(this.readyState==4){
+				if(xhr.responseText){
+		    		//update_status(xhr.responseText);
+					var obj = JSON.parse(xhr.responseText);
+					obj_friends_ope_2 = obj;
+	    		}
+			}
+
+		}
+	    
+	    xhr.open( xhrMethod, xhrURL );
+	    xhr.setRequestHeader('Authorization', 'Basic '+ auth_info );
+	    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+	    //xhr.responseType = 'json';
+	    
+	    xhr.send();
+	   // xhr.abort();
+
+	}
+	function get_vrchat_info_self_info(apiKey) {
+	    var xhr 			= new XMLHttpRequest();
+
+	    var var_user 		= document.getElementById('id_user').value;
+	    var var_pass 		= document.getElementById('id_pass').value;
+	    var var_output 		= document.getElementById('id_output').value;
+	    
+		
+		//update_status("apiKey："+apiKey);
+		//update_status("取得種類："+var_info_type);
+		
+		var xhrURL		= 'https://api.vrchat.cloud/api/1/auth/user'+ "?apiKey="+apiKey;
+
+
+		//update_status(xhrURL);
+		
+		var xhrMethod	= 'GET'
+
+	    var auth_info 	= enc_base64(var_user+":"+var_pass);
+
+	    //update_status("BASE64："+auth_info);
+	    
+		xhr.onreadystatechange = function(){
+			if(this.readyState==4){
+				if(xhr.responseText){
+		    		//update_status(xhr.responseText);
+					obj_user = JSON.parse(xhr.responseText);
+	    		}
+			}
+
+		}
+		
+	    
+	    xhr.open( xhrMethod, xhrURL );
+	    xhr.setRequestHeader('Authorization', 'Basic '+ auth_info );
+	    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+	    //xhr.responseType = 'json';
+	    
+	    xhr.send();
+	   // xhr.abort();
+
+	}
+
+	function get_vrchat_info_friend_list_online(apiKey) {
+	    var xhr 			= new XMLHttpRequest();
+
+	    var var_user 		= document.getElementById('id_user').value;
+	    var var_pass 		= document.getElementById('id_pass').value;
+	    var var_output 		= document.getElementById('id_output').value;
+	    
+		
+		//update_status("apiKey："+apiKey);
+		//update_status("取得種類："+var_info_type);
+		
+		var xhrURL		=  'https://api.vrchat.cloud/api/1/auth/user/friends'+ "?apiKey="+apiKey+ "&offset="+(100*request_counter)+ "&offline=false";
+
+		//update_status(xhrURL);
+		
+		var xhrMethod	= 'GET'
+
+	    var auth_info 	= enc_base64(var_user+":"+var_pass);
+
+	    //update_status("BASE64："+auth_info);
+	    
+		xhr.onreadystatechange = function(){
+			if(this.readyState==4){
+				if(xhr.responseText){
+		    		//update_status(xhr.responseText);
 						var obj = JSON.parse(xhr.responseText);
 						if(obj_temp==""){
 							obj_temp = obj;
@@ -424,27 +603,74 @@
 						}
 						if(obj.length==100){
 							update_status("リスト取得：＜"+(100*request_counter));
-							get_vrchat_info(apiKey);
+							get_vrchat_info_friend_list_online(apiKey);
 						}else{
 							obj = obj_temp;
 							obj_temp = "";
-							switch(var_info_type){
-							case "friend_list_online":
-								obj_friends_online = obj;
-								sort_friend_by_world()
-								break;
-							case "friend_list_offline":
-								obj_friends_offline = obj;
-								break;
-							}
+							obj_friends_online = obj;
+							sort_friend_by_world()
 							request_counter=0;
 						}
-						break;
-					default:
-						obj_user = JSON.parse(xhr.responseText);
-						break;
-					}
-					g_state_normal = "state_display";
+	    		}
+			}
+		}
+		
+	    
+	    xhr.open( xhrMethod, xhrURL );
+	    xhr.setRequestHeader('Authorization', 'Basic '+ auth_info );
+	    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+	    //xhr.responseType = 'json';
+	    
+	    xhr.send();
+	   // xhr.abort();
+
+	}		
+		
+		
+	function get_vrchat_info_friend_list_offline(apiKey) {
+	    var xhr 			= new XMLHttpRequest();
+
+	    var var_user 		= document.getElementById('id_user').value;
+	    var var_pass 		= document.getElementById('id_pass').value;
+	    var var_output 		= document.getElementById('id_output').value;
+	    
+		
+		//update_status("apiKey："+apiKey);
+		//update_status("取得種類："+var_info_type);
+		
+		var xhrURL		= 'https://api.vrchat.cloud/api/1/auth/user/friends'+ "?apiKey="+apiKey+ "&offset="+(100*request_counter)+ "&offline=true";
+		request_counter+=1;
+
+
+		//update_status(xhrURL);
+		
+		var xhrMethod	= 'GET'
+
+	    var auth_info 	= enc_base64(var_user+":"+var_pass);
+
+	    //update_status("BASE64："+auth_info);
+	    
+		xhr.onreadystatechange = function(){
+			if(this.readyState==4){
+				if(xhr.responseText){
+		    		//update_status(xhr.responseText);
+						var obj = JSON.parse(xhr.responseText);
+						if(obj_temp==""){
+							obj_temp = obj;
+						}else{
+							for(var i=0;i<obj.length;i++){
+								obj_temp.push(obj[i]);
+							}
+						}
+						if(obj.length==100){
+							update_status("リスト取得：＜"+(100*request_counter));
+							get_vrchat_info_friend_list_offline(apiKey);
+						}else{
+							obj = obj_temp;
+							obj_temp = "";
+							obj_friends_offline = obj;
+							request_counter=0;
+						}
 	    		}
 			}
 
@@ -581,14 +807,11 @@
 	
 	function get_information() {
 	
-	    var var_user 		= document.getElementById('id_user').value;
-	    var var_pass 		= document.getElementById('id_pass').value;
-	    
-	    if(var_user == ""){
+	    if(document.getElementById('id_user').value == ""){
 	    	update_status("ユーザー名を入力してください")
 	    	return false;
 	    }
-	    if(var_pass == ""){
+	    if(document.getElementById('id_pass').value == ""){
 	    	update_status("パスワードを入力してください")
 	    	return false;
 	    }
@@ -612,17 +835,20 @@
 	    
 		switch(var_repeat_type){
 		case "1min_repeat":
-			var_repeat_interval =  60000;
+			var_repeat_interval =   60000;
 			
 			break;
 		case "3min_repeat":
-			var_repeat_interval = 180000;
+			var_repeat_interval =  180000;
 			break;
 		case "5min_repeat":
-			var_repeat_interval = 300000;
+			var_repeat_interval =  300000;
 			break;
 		case "10min_repeat":
-			var_repeat_interval = 600000;
+			var_repeat_interval =  600000;
+			break;
+		case "30min_repeat":
+			var_repeat_interval = 1800000;
 			break;
 		case "no_repat":
 			var_repeat_interval = 0;
@@ -726,7 +952,7 @@
 		　	<input type="radio"  name="info_type" value="friend_list_offline">[B]フレンド一覧(オフライン)　
 		　	<input type="radio"  name="info_type" value="friend_2">[D]フレンド操作＜自分から＞
 		　	<input type="radio"  name="info_type" value="friend_list_all">[E]フレンド全員(簡易表示)　<BR><BR>
-		　　※[A]と[B]は、ユーザー数が多いと時間がかかります。　　　　※[E]は、[A][B][C][D]取得後に実行推奨。
+		　　※[A],[B],[E]は、ユーザー数が多いと時間がかかります。
 		<!--出力ファイル名：<input id="id_output" value="output.txt">-->
 		<BR><BR>
 		　取得インターバル：
@@ -735,18 +961,19 @@
 		　	<input type="radio"  name="repeat_type" value="3min_repeat" >３分おき　
 		　	<input type="radio"  name="repeat_type" value="5min_repeat" >５分おき　
 		　	<input type="radio"  name="repeat_type" value="10min_repeat" >10分おき　
+		　	<input type="radio"  name="repeat_type" value="30min_repeat" >30分おき　
 		<BR><BR>
 		<span id="id_interface_button"><button onclick="get_information()" style="height:30px;width:100px">取得</button></span>　　<span id="id_repat_time"></span>
 	</div>
 	
 	<BR><BR>
 	
-	<div id="id_output">■結果：
+	<div id="id_output">■取得情報：
 		<div id="id_output_data">　未取得</div>
 	</div>
 	<br>
 	<br>
-	<div id="id_console">■ステータス：
+	<div id="id_console">■取得ログ：
 		<div id="id_status"></div>
 	</div>
 
