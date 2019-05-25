@@ -85,6 +85,7 @@ VRChatフレンド手帳　Ver0.06
 			}
 			break;
 		case "state_get_data":
+			temp_save_friend_memo();
 			g_state_normal = "state_wait";
 			document.getElementById('id_repat_time').innerHTML ="取得中"
 			get_vrchat_info(g_apiKey);
@@ -139,21 +140,39 @@ VRChatフレンド手帳　Ver0.06
 			break;
 			
 		case "friend_list_all":
-			if(obj_friends_ope_1==""){
+			if(false){
+				if(obj_friends_ope_1==""){
+					get_vrchat_info_friend_1(apiKey);
+				}
+				if(obj_friends_ope_2==""){
+					get_vrchat_info_friend_2(apiKey);
+				}
+				if(obj_friends_online==""){
+					get_vrchat_info_friend_list_online(apiKey);
+				}
+				if(obj_friends_offline==""){
+					get_vrchat_info_friend_list_offline(apiKey);
+				}
+				if(obj_user==""){
+					get_vrchat_info_self_info(apiKey);
+				}
+			}else{
+				obj_friends_ope_1 = "";
 				get_vrchat_info_friend_1(apiKey);
-			}
-			if(obj_friends_ope_2==""){
+				
+				obj_friends_ope_2 = "";
 				get_vrchat_info_friend_2(apiKey);
-			}
-			if(obj_friends_online==""){
+				
+				obj_user = "";
+				get_vrchat_info_self_info(apiKey);
+				
+				obj_friends_online = "";
 				get_vrchat_info_friend_list_online(apiKey);
-			}
-			if(obj_friends_offline==""){
+				
+				obj_friends_offline = "";
 				get_vrchat_info_friend_list_offline(apiKey);
 			}
-			if(obj_user==""){
-				get_vrchat_info_self_info(apiKey);
-			}
+			
 			break;
 		}
 	}
@@ -922,7 +941,6 @@ VRChatフレンド手帳　Ver0.06
 			g_state_pre = "state_get_pre_data_1";
 		}
 		if(g_state_normal == "state_stanby"){
-			temp_save_friend_memo();
 			g_state_normal = "state_get_data";
 		}
 	}
