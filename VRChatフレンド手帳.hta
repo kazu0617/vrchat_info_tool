@@ -9,15 +9,15 @@ VRChatフレンド手帳　Ver0.09
 <!DOCTYPE html>
 <html>
 <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=Edge" charset="utf-8" />
 <title>VRChatフレンド手帳　Ver0.09</title>
+
 <style type="text/css">
     table { table-layout:fixed }
     td { background-color:#fff1ff }
     //tr {height:80px;max-height:80px;overflow: hidden;display:block}
-}
-
 </style>
+
 <script type="text/javascript">
 
 	var var_info_type 		= "";
@@ -49,78 +49,86 @@ VRChatフレンド手帳　Ver0.09
 	var var_repeat_interval = 0;
 	var signal_error= false;
 	
+	
+	//■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	var main_loop = function(){
 	
-	//update_status("g_state_pre："+g_state_pre+"  g_state_normal："+g_state_normal+"  g_state："+g_state);
-	
-	switch(g_state){
-	case "state_start":
-		switch(g_state_pre){
-		case "state_get_pre_data_1":
-			update_get_button_status("取得中")
-			get_APIkey();//'JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26'
+		//update_status("g_state_pre："+g_state_pre+"  g_state_normal："+g_state_normal+"  g_state："+g_state);
+		
+		switch(g_state){
+		case "state_start":
+			switch(g_state_pre){
+			case "state_get_pre_data_1":
+				update_get_button_status("取得中")
+				get_APIkey();//'JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26'
+				break;
+			case "state_get_pre_data_2":
+				get_World_recent(g_apiKey);
+				break;
+			case "state_get_pre_data_3":
+				get_World_Favorite(g_apiKey);
+				break;
+			case "state_get_pre_data_4":
+				get_World_Active(g_apiKey);
+				break;
+			case "state_get_pre_end":
+				g_state = "state_normal";
+				break;
+			}
 			break;
-		case "state_get_pre_data_2":
-			get_World_recent(g_apiKey);
-			break;
-		case "state_get_pre_data_3":
-			get_World_Favorite(g_apiKey);
-			break;
-		case "state_get_pre_data_4":
-			get_World_Active(g_apiKey);
-			break;
-		case "state_get_pre_end":
-			g_state = "state_normal";
-			break;
-		}
-		break;
-	case "state_normal":
-		switch(g_state_normal){
-			case "state_stanby":
-			if(var_repeat_interval){
-				update_get_button_status("次の取得まで："+parseInt((var_repeat_interval - (Date.now() - var_reapt_start))/1000)+"秒");
-				if((var_repeat_interval - (Date.now() - var_reapt_start))<0){
-					update_status("インターバルによる取得:");
-					g_state_normal = "state_get_data";
-					var_reapt_start = Date.now();
+		case "state_normal":
+			switch(g_state_normal){
+				case "state_stanby":
+				if(var_repeat_interval){
+					update_get_button_status("次の取得まで："+parseInt((var_repeat_interval - (Date.now() - var_reapt_start))/1000)+"秒");
+					if((var_repeat_interval - (Date.now() - var_reapt_start))<0){
+						update_status("インターバルによる取得:");
+						g_state_normal = "state_get_data";
+						var_reapt_start = Date.now();
+					}
+				}else{
+					update_get_button_status("")
 				}
-			}else{
-				update_get_button_status("")
-			}
-			break;
-		case "state_get_data":
-			temp_save_friend_memo();
-			g_state_normal = "state_wait";
-			update_get_button_status("取得中");
-			get_vrchat_info(g_apiKey);
-			break;
-		case "state_wait":
-			if(wait_get_object()){
-				g_state_normal = "state_display";
-			}
-			if(signal_error){
+				break;
+			case "state_get_data":
+				temp_save_friend_memo();
+				g_state_normal = "state_wait";
+				update_get_button_status("取得中");
+				get_vrchat_info(g_apiKey);
+				break;
+			case "state_wait":
+				if(wait_get_object()){
+					g_state_normal = "state_display";
+				}
+				if(signal_error){
+					g_state_normal = "state_stanby";
+					signal_error= false;
+				}
+				break;
+			case "state_display":
+				display_info();
 				g_state_normal = "state_stanby";
-				signal_error= false;
+				break;
 			}
-			break;
-		case "state_display":
-			display_info();
-			g_state_normal = "state_stanby";
 			break;
 		}
-		break;
-	}
 	
 	
 	};
-    	
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+
+
+	//■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
     //初期設定
     function init(){
         window.resizeTo(1200,1200);
         setInterval(main_loop, 100);
     }
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+	
     init();
     
+	//■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function get_vrchat_info(apiKey) {
 		
 		var xhrURL		= "";
@@ -184,7 +192,10 @@ VRChatフレンド手帳　Ver0.09
 			break;
 		}
 	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 	
+	
+	//■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
     function wait_get_object(){
 			switch(var_info_type){
 			case "friend_1":		//playermoderated 
@@ -219,7 +230,8 @@ VRChatフレンド手帳　Ver0.09
 				break;
 			}
     }
-    
+
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
     function display_info(){
 		switch(var_info_type){
 		case "friend_1":		//playermoderated 
@@ -242,7 +254,9 @@ VRChatフレンド手帳　Ver0.09
 			break;
 		}
     }
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
     
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function sort_friend_by_world(obj) {
 		
 		obj_world_count = {};
@@ -275,8 +289,10 @@ VRChatフレンド手帳　Ver0.09
     });
     return obj;
     }
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
     
 	
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function find_world_name_by_id(id) {
 		for(var i=0;i<obj_world_recent.length;i++){
 			if(obj_world_recent[i].id == id){
@@ -300,7 +316,10 @@ VRChatフレンド手帳　Ver0.09
 		}
 		return {"name":"","thumbnailImageURL":""};
 	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 	
+	
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function find_friend_name_by_id(id) {
 		for(var i=0;i<obj_friends_ope_2.length;i++){
 			if(obj_friends_ope_2[i].targetUserId == id){
@@ -314,6 +333,10 @@ VRChatフレンド手帳　Ver0.09
 		}
 		return {"created":"","type":""};
 	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+	
+	
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function find_name_by_id(id) {
 		for(var i=0;i<obj_friends_online.length;i++){
 			if(obj_friends_online[i].id == id){
@@ -327,7 +350,10 @@ VRChatフレンド手帳　Ver0.09
 		}
 		return {"username":"","displayName":""};
 	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 	
+	
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function display_info_friend(obj) {
 		var result="";
 		
@@ -345,8 +371,10 @@ VRChatフレンド手帳　Ver0.09
 		msg_out(result);
 		//update_status("列数："+obj.length)
 	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 	
 	
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function display_info_user(obj) {
 		var result="";
 		
@@ -389,7 +417,10 @@ VRChatフレンド手帳　Ver0.09
 		
 		msg_out(result);
 	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 	
+	
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function display_info_friend_online(obj) {
 		var result="";
 		
@@ -435,7 +466,10 @@ VRChatフレンド手帳　Ver0.09
 		//update_status("列数："+obj.length)
 
 	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 	
+	
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function display_info_friend_offline(obj) {
 		var result="";
 		
@@ -460,7 +494,10 @@ VRChatフレンド手帳　Ver0.09
 		msg_out(result);
 		//update_status("列数："+obj.length)
 	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 	
+	
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function display_info_friend_all(obj) {
 		var result="";
 		
@@ -489,7 +526,10 @@ VRChatフレンド手帳　Ver0.09
 		msg_out(result);
 		//update_status("列数："+obj.friends.length)
 	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
     
+    
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function load_friend_memo(){
 		var obj_file_load = document.getElementById('id_load_friend_memo');
 		obj_file_load.click();
@@ -520,6 +560,10 @@ VRChatフレンド手帳　Ver0.09
 		reader.readAsText(obj_file_load.files[0], 'UTF-8');
 		
 	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+	
+	
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function temp_save_friend_memo(){
 		var var_friend_memo_list 	= document.getElementsByName('friend_memo');
 
@@ -528,7 +572,10 @@ VRChatフレンド手帳　Ver0.09
 			obj_friends_memo[var_friend_memo_list[i].id.split('/')[1]] = {"username":friend_obj.username,"displayName":friend_obj.displayName,memo:var_friend_memo_list[i].value};
 		}
 	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 	
+
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function save_friend_memo(){
 	
 		temp_save_friend_memo();
@@ -538,7 +585,10 @@ VRChatフレンド手帳　Ver0.09
 		navigator.msSaveOrOpenBlob(new Blob([JSON.stringify(obj_friends_memo)], {type: 'text/plain'}),"vrchat_friends_memo.json");
 
 	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 
+
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function get_vrchat_info_friend_1(apiKey) {
 	    var xhr 			= new XMLHttpRequest();
 
@@ -583,7 +633,10 @@ VRChatフレンド手帳　Ver0.09
 	   // xhr.abort();
 
 	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 	
+	
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function get_vrchat_info_friend_2(apiKey) {
 	    var xhr 			= new XMLHttpRequest();
 
@@ -629,6 +682,10 @@ VRChatフレンド手帳　Ver0.09
 	   // xhr.abort();
 
 	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+	
+	
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function get_vrchat_info_self_info(apiKey) {
 	    var xhr 			= new XMLHttpRequest();
 
@@ -675,7 +732,10 @@ VRChatフレンド手帳　Ver0.09
 	   // xhr.abort();
 
 	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 
+
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function get_vrchat_info_friend_list_online(apiKey) {
 	    var xhr 			= new XMLHttpRequest();
 
@@ -736,9 +796,11 @@ VRChatフレンド手帳　Ver0.09
 	    xhr.send();
 	   // xhr.abort();
 
-	}		
+	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 		
 		
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function get_vrchat_info_friend_list_offline(apiKey) {
 	    var xhr 			= new XMLHttpRequest();
 
@@ -802,9 +864,11 @@ VRChatフレンド手帳　Ver0.09
 	   // xhr.abort();
 
 	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 	
 	
 
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function get_APIkey() {
 
 	    var xhr 		= new XMLHttpRequest();
@@ -828,8 +892,10 @@ VRChatフレンド手帳　Ver0.09
 	    
 	    
 	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 
 
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function get_World_recent(apiKey) {
 
 	    var xhr 		= new XMLHttpRequest();
@@ -851,7 +917,10 @@ VRChatフレンド手帳　Ver0.09
 	    xhr.send();
 	    
 	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 	
+	
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function get_World_Favorite(apiKey) {
 
 	    var xhr 		= new XMLHttpRequest();
@@ -873,6 +942,10 @@ VRChatフレンド手帳　Ver0.09
 	    xhr.send();
 	    
 	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+	
+	
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function get_World_Active(apiKey) {
 
 	    var xhr 		= new XMLHttpRequest();
@@ -894,6 +967,10 @@ VRChatフレンド手帳　Ver0.09
 	    xhr.send();
 	    
 	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+	
+	
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function OnGetWorldName(no) {
 		if(g_state_normal != "state_stanby"){
 			return false;
@@ -918,6 +995,10 @@ VRChatフレンド手帳　Ver0.09
 	    xhr.send();
 	    
 	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+	
+	
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function stop_repeat() {
 		document.getElementById('id_interface_button').innerHTML = "<button onclick=\"get_information()\" style=\"height:40px;width:200px\"><font size='4'>取得</font></button>";
 		update_get_button_status("")
@@ -936,7 +1017,10 @@ VRChatフレンド手帳　Ver0.09
 	    	var_repeat_type_list[i].disabled = false;
 	    }
 	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 	
+	
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function get_information() {
 	
 	    if(document.getElementById('id_user').value == ""){
@@ -1011,7 +1095,10 @@ VRChatフレンド手帳　Ver0.09
 			g_state_normal = "state_get_data";
 		}
 	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 
+
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function enc_base64(source_moji) {
 
 		var map_base64 = [	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 
@@ -1066,61 +1153,76 @@ VRChatフレンド手帳　Ver0.09
 		return enc_moji;
 
 	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+	
+	
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function msg_out(message) {
 		document.getElementById('id_output_data').innerHTML = message;
 	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+	
+	
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function update_status(message) {
 		document.getElementById('id_status').innerHTML = message + "<br>"+document.getElementById('id_status').innerHTML;
 	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+	
+	
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function update_get_button_status(message) {
 		document.getElementById('id_get_button_status').innerHTML = message;
 	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 </script>
 
 </head>
-	<body>
+
+
+<body>
 	<div id="body_all" style="padding:20px;">
-	<div id="id_header">
-		<font size="5" color="blue">　　　　　　　＝＝　&#x1f4d5;　&#x1f4d6;　VRChatフレンド手帳　　&#x1f4d5;　&#x1f4d6;　＝＝</font>
-	</div>
-	
-	<BR>
-	
-	<div id="id_interface">■入力：
-		ユーザー名：<input id="id_user">
-		　パスワード：<input id="id_pass" type="password"><BR><BR>
-		　◎取得種類：
-		　　<input type="radio"  name="info_type" value="self_info">[0]ユーザー情報<BR>
-		　	<input type="radio"  name="info_type" value="friend_list_online" checked>[A]フレンド一覧(オンライン)　
-		　	<input type="radio"  name="info_type" value="friend_1">[C]フレンド操作＜相手から＞<br>
-		　	<input type="radio"  name="info_type" value="friend_list_offline">[B]フレンド一覧(オフライン)　
-		　	<input type="radio"  name="info_type" value="friend_2">[D]フレンド操作＜自分から＞
-		　	<input type="radio"  name="info_type" value="friend_list_all">[E]フレンド履歴　<BR><BR>
-		　　※[A],[B],[E]は、ユーザー数が多いと時間がかかります。
-		<!--出力ファイル名：<input id="id_output" value="output.txt">-->
+		<div id="id_header">
+			<font size="5" color="blue">　　　　　　　＝＝　&#x1f4d5;　&#x1f4d6;　VRChatフレンド手帳　　&#x1f4d5;　&#x1f4d6;　＝＝</font>
+		</div>
+
+		<BR>
+
+		<div id="id_interface">■入力：
+			ユーザー名：<input id="id_user">
+			　パスワード：<input id="id_pass" type="password"><BR><BR>
+			　◎取得種類：
+			　　<input type="radio"  name="info_type" value="self_info">[0]ユーザー情報<BR>
+			　	<input type="radio"  name="info_type" value="friend_list_online" checked>[A]フレンド一覧(オンライン)　
+			　	<input type="radio"  name="info_type" value="friend_1">[C]フレンド操作＜相手から＞<br>
+			　	<input type="radio"  name="info_type" value="friend_list_offline">[B]フレンド一覧(オフライン)　
+			　	<input type="radio"  name="info_type" value="friend_2">[D]フレンド操作＜自分から＞
+			　	<input type="radio"  name="info_type" value="friend_list_all">[E]フレンド履歴　<BR><BR>
+			　　※[A],[B],[E]は、ユーザー数が多いと時間がかかります。
+			<!--出力ファイル名：<input id="id_output" value="output.txt">-->
+			<BR><BR>
+			　◎取得インターバル：
+			　　<input type="radio"  name="repeat_type" value="no_repeat" checked>一回だけ
+			　	<input type="radio"  name="repeat_type" value="1min_repeat" >１分おき　
+			　	<input type="radio"  name="repeat_type" value="3min_repeat" >３分おき　
+			　	<input type="radio"  name="repeat_type" value="5min_repeat" >５分おき　
+			　	<input type="radio"  name="repeat_type" value="10min_repeat" >10分おき　
+			　	<input type="radio"  name="repeat_type" value="30min_repeat" >30分おき　
+			<BR><BR>
+			　　　<span id="id_interface_button"><button onclick="get_information()" style="height:40px;width:200px"><font size="4">取得</font></button></span>　　<span id="id_get_button_status"></span>
+		</div>
+
 		<BR><BR>
-		　◎取得インターバル：
-		　　<input type="radio"  name="repeat_type" value="no_repeat" checked>一回だけ
-		　	<input type="radio"  name="repeat_type" value="1min_repeat" >１分おき　
-		　	<input type="radio"  name="repeat_type" value="3min_repeat" >３分おき　
-		　	<input type="radio"  name="repeat_type" value="5min_repeat" >５分おき　
-		　	<input type="radio"  name="repeat_type" value="10min_repeat" >10分おき　
-		　	<input type="radio"  name="repeat_type" value="30min_repeat" >30分おき　
-		<BR><BR>
-		　　　<span id="id_interface_button"><button onclick="get_information()" style="height:40px;width:200px"><font size="4">取得</font></button></span>　　<span id="id_get_button_status"></span>
-	</div>
-	
-	<BR><BR>
-	
-	<div id="id_output">■取得情報：
-		<div id="id_output_data">　未取得</div>
-	</div>
-	<br>
-	<br>
-	<div id="id_console">■取得ログ：
-		<div id="id_status" style="overflow:auto;width:600px;height:200px;border:1px solid #000;padding:5px;margin-left: 20px;margin-top: 5px;"></div>
-	</div>
+
+		<div id="id_output">■取得情報：
+			<div id="id_output_data">　未取得</div>
+		</div>
+		<br>
+		<br>
+		<div id="id_console">■取得ログ：
+			<div id="id_status" style="overflow:auto;width:600px;height:200px;border:1px solid #000;padding:5px;margin-left: 20px;margin-top: 5px;"></div>
+		</div>
 	</div>
 
-	</body>
+</body>
 </html>
