@@ -1,8 +1,8 @@
 <!--
-VRChatフレンド手帳　Ver0.08
+VRChatフレンド手帳　Ver0.09
 製作者:のの @nonogame5656
 製作日：2019年5月14日
-更新日：2019年5月25日
+更新日：2019年5月26日
 -->
 
 
@@ -10,10 +10,12 @@ VRChatフレンド手帳　Ver0.08
 <html>
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" charset="utf-8" />
-<title>VRChatフレンド手帳　Ver0.08</title>
+<title>VRChatフレンド手帳　Ver0.09</title>
 <style type="text/css">
     table { table-layout:fixed }
     td { background-color:#fff1ff }
+    //tr {height:80px;max-height:80px;overflow: hidden;display:block}
+}
 
 </style>
 <script type="text/javascript">
@@ -45,6 +47,7 @@ VRChatフレンド手帳　Ver0.08
 	var g_state        = "state_start";
 	var var_repeat_start = 0;
 	var var_repeat_interval = 0;
+	var signal_error= false;
 	
 	var main_loop = function(){
 	
@@ -54,7 +57,7 @@ VRChatフレンド手帳　Ver0.08
 	case "state_start":
 		switch(g_state_pre){
 		case "state_get_pre_data_1":
-			document.getElementById('id_repat_time').innerHTML ="取得中"
+			update_get_button_status("取得中")
 			get_APIkey();//'JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26'
 			break;
 		case "state_get_pre_data_2":
@@ -75,25 +78,29 @@ VRChatフレンド手帳　Ver0.08
 		switch(g_state_normal){
 			case "state_stanby":
 			if(var_repeat_interval){
-				document.getElementById('id_repat_time').innerHTML = "次の取得まで："+parseInt((var_repeat_interval - (Date.now() - var_reapt_start))/1000)+"秒";
+				update_get_button_status("次の取得まで："+parseInt((var_repeat_interval - (Date.now() - var_reapt_start))/1000)+"秒");
 				if((var_repeat_interval - (Date.now() - var_reapt_start))<0){
 					update_status("インターバルによる取得:");
 					g_state_normal = "state_get_data";
 					var_reapt_start = Date.now();
 				}
 			}else{
-				document.getElementById('id_repat_time').innerHTML =""
+				update_get_button_status("")
 			}
 			break;
 		case "state_get_data":
 			temp_save_friend_memo();
 			g_state_normal = "state_wait";
-			document.getElementById('id_repat_time').innerHTML ="取得中"
+			update_get_button_status("取得中");
 			get_vrchat_info(g_apiKey);
 			break;
 		case "state_wait":
 			if(wait_get_object()){
 				g_state_normal = "state_display";
+			}
+			if(signal_error){
+				g_state_normal = "state_stanby";
+				signal_error= false;
 			}
 			break;
 		case "state_display":
@@ -248,7 +255,7 @@ VRChatフレンド手帳　Ver0.08
 			//update_status("world数："+obj[i].location.split(":")[0]+" "+obj_world_count[obj[i].location.split(":")[0]]);
 		}
 		
-		update_status("列数："+obj.length);
+		//update_status("列数："+obj.length);
       obj = obj.sort(function(a, b){
       var x = obj_world_count[a.location.split(":")[0]];
       var y = obj_world_count[b.location.split(":")[0]];
@@ -336,7 +343,7 @@ VRChatフレンド手帳　Ver0.08
 		}
 		result += "</table>";
 		msg_out(result);
-		update_status("列数："+obj.length)
+		//update_status("列数："+obj.length)
 	}
 	
 	
@@ -386,35 +393,42 @@ VRChatフレンド手帳　Ver0.08
 	function display_info_friend_online(obj) {
 		var result="";
 		
-		result += "<table><th>NO.</th><th>サムネイル</th><th>表示名<BR>ユーザー名</th><th>場所</th><th>サムネイル</th>"
+		result += "<table><th>NO.</th><th>サムネイル</th><th>表示名<BR>ユーザー名</th><th>場所</th><th>サムネイル</th><th>交流メモ　　<span id='id_interface_friend_save_button'><input type='file' id='id_load_friend_memo' name='id_load_friend_memo_file' style='display:none'></input><button onclick='load_friend_memo()' style='height:30px;width:100px'>ファイル読込</button><button onclick='save_friend_memo()' style='height:30px;width:100px'>ファイル保存</button></span></th>"
 		for(var i=0;i<obj.length;i++){
-		var world_info="";
-		if(obj[i].location=="private"){
-			world_info = "<td width='500' align='center'><B>PRIVATE</B></td><td width='110' align='center'></td>";
-		}
-		else{
-			world_obj_info = find_world_name_by_id(obj[i].location.split(':')[0]);
+			var world_info="";
+			if(obj[i].location=="private"){
+				world_info = "<td width='360' align='center'><B>PRIVATE</B></td><td width='110' align='center'></td>";
+			}
+			else{
+				world_obj_info = find_world_name_by_id(obj[i].location.split(':')[0]);
+				
+				if(world_obj_info.name !=""){
+					world_info = "<td width='360' align='center'><B>"+world_obj_info.name+"</B><BR><BR> <font size='2.5'>(" +obj[i].location.split('~')[0]+")</font></td>";
+					//world_info = "<td width='360' align='center'><table><tr><td width='85%' align='center'><B>"+world_obj_info.name+"</B></td><td align='center'><B>"+"<a href='vrchat://launch?ref=vrchat.com&id="+obj[i].location+"'>に移動</a>"+"</B></td></tr></table><BR> (" +obj[i].location.split('~')[0]+")</td>";
+				}else{
+					world_info = "<td width='360' align='center'><B>"+"<a href=\"#\" onclick=\"OnGetWorldName("+i+");return false;\">" +"ワールドの名前とサムネイル取得"+"</a></B><br><BR><font size='2.5'> (" +obj[i].location.split('~')[0]+")</font></td>";
+				}
+				if(world_obj_info.thumbnailImageURL !=""){
+					world_info += "<td width='110' align='center' valign='middle'>"+"<img src=\""+world_obj_info.imageUrl+"\" width=\"100\"></td>"
+				}else{
+					world_info += "<td width='110' align='center'></td>"
+				}
+			}
+			var obj_friend_memo = obj_friends_memo[obj[i].id];
+			var friend_memo = ""
+			if(obj_friend_memo){
+				friend_memo = obj_friend_memo.memo;
+			}
+			result += "<tr height='30'>"
 			
-			if(world_obj_info.name !=""){
-				world_info = "<td width='500' align='center'><B>"+world_obj_info.name+"</B><BR> (" +obj[i].location.split('~')[0]+")</td>";
-			}else{
-				world_info = "<td width='500' align='center'><B>"+"<a href=\"#\" onclick=\"OnGetWorldName("+i+");return false;\">" +"ワールドの名前とサムネイル取得"+"</a></B><BR> (" +obj[i].location.split('~')[0]+")</td>";
-			}
-			if(world_obj_info.thumbnailImageURL !=""){
-				world_info += "<td width='110' align='center'>"+"<img src=\""+world_obj_info.imageUrl+"\" width=\"100\"></td>"
-			}else{
-				world_info += "<td width='110' align='center'></td>"
-			}
-		}
-		result += "<tr height='30'>"
-		
-		result += "<td width='30' align='center'>"
-				+(i+1)+"</td><td width='110' align='center'>"
-				+"<img src=\""+obj[i].currentAvatarThumbnailImageUrl+"\" width=\"100\"></td><td width='200' align='center'><font size='4'><B>"
-				+obj[i].displayName+"</B></font><br><br>"
-				+obj[i].username+"</td>"
-				+world_info//
-		result += "</tr>"
+			result += "<td width='30' align='center'>"
+					+(i+1)+"</td><td width='110' align='center' valign='middle'>"
+					+"<img src=\""+obj[i].currentAvatarThumbnailImageUrl+"\" width=\"100\"></td><td width='200' align='center'><font size='4'><B>"
+					+obj[i].displayName+"</B></font><br><br>"
+					+obj[i].username+"</td>"
+					+world_info//
+					+"<td width='160' align='center'><textarea id ="+"id_friend_memo/"+obj[i].id+" name ='friend_memo' rows='5' cols='33'>"+friend_memo+"</textarea></td>"
+			result += "</tr>"
 		}
 		result += "</table>";
 		msg_out(result);
@@ -425,16 +439,22 @@ VRChatフレンド手帳　Ver0.08
 	function display_info_friend_offline(obj) {
 		var result="";
 		
-		result += "<table><th>NO.</th><th>サムネイル</th><th>表示名<BR>ユーザー名</th><th>場所</th>"
+		result += "<table><th>NO.</th><th>サムネイル</th><th>表示名<BR>ユーザー名</th><th>場所</th><th>交流メモ　　<span id='id_interface_friend_save_button'><input type='file' id='id_load_friend_memo' name='id_load_friend_memo_file' style='display:none'></input><button onclick='load_friend_memo()' style='height:30px;width:100px'>ファイル読込</button><button onclick='save_friend_memo()' style='height:30px;width:100px'>ファイル保存</button></span></th>"
 		result += "<tr height='10'>"
 		for(var i=0;i<obj.length;i++){
-		result += "<td width='30' align='center'>"
-				+(i+1)+"</td><td width='110' align='center'>"
-				+"<img src=\""+obj[i].currentAvatarThumbnailImageUrl+"\" width=\"100\"></td><td width='200' align='center'><font size='4'><B>"
-				+obj[i].displayName+"</B></font><br><br>"
-				+obj[i].username+"</td><td width='200' align='center'>"
-				+"offline</td>"//
-		result += "</tr>"
+			var obj_friend_memo = obj_friends_memo[obj[i].id];
+			var friend_memo = ""
+			if(obj_friend_memo){
+				friend_memo = obj_friend_memo.memo;
+			}
+			result += "<td width='30' align='center'>"
+					+(i+1)+"</td><td width='110' align='center'>"
+					+"<img src=\""+obj[i].currentAvatarThumbnailImageUrl+"\" width=\"100\"></td><td width='200' align='center'><font size='4'><B>"
+					+obj[i].displayName+"</B></font><br><br>"
+					+obj[i].username+"</td><td width='300' align='center'>"
+					+"offline</td>"//
+					+"<td width='160' align='center'><textarea id ="+"id_friend_memo/"+obj[i].id+" name ='friend_memo' rows='5' cols='40'>"+friend_memo+"</textarea></td>"
+			result += "</tr>"
 		}
 		result += "</table>";
 		msg_out(result);
@@ -467,7 +487,7 @@ VRChatフレンド手帳　Ver0.08
 		}
 		result += "</table>";
 		msg_out(result);
-		update_status("列数："+obj.friends.length)
+		//update_status("列数："+obj.friends.length)
 	}
     
 	function load_friend_memo(){
@@ -542,6 +562,10 @@ VRChatフレンド手帳　Ver0.08
 	    
 		xhr.onreadystatechange = function(){
 			if(this.readyState==4){
+			  if(xhr.status === 0) {
+    				update_status("<font color=\"blue\">取得ERROR:"+xhr.status+" 「ユーザー名、パスワードが間違っている可能性があります」</font>");
+    				signal_error = true;
+ 				}
 				if(xhr.responseText){
 		    		//update_status(xhr.responseText);
 					var obj = JSON.parse(xhr.responseText);
@@ -583,6 +607,10 @@ VRChatフレンド手帳　Ver0.08
 	    
 		xhr.onreadystatechange = function(){
 			if(this.readyState==4){
+			  if(xhr.status === 0) {
+    				update_status("<font color=\"blue\">取得ERROR:"+xhr.status+" 「ユーザー名、パスワードが間違っている可能性があります」</font>");
+    				signal_error = true;
+ 				}
 				if(xhr.responseText){
 		    		//update_status(xhr.responseText);
 					var obj = JSON.parse(xhr.responseText);
@@ -625,6 +653,10 @@ VRChatフレンド手帳　Ver0.08
 	    
 		xhr.onreadystatechange = function(){
 			if(this.readyState==4){
+			  if(xhr.status === 0) {
+    				update_status("<font color=\"blue\">取得ERROR:"+xhr.status+" 「ユーザー名、パスワードが間違っている可能性があります」</font>");
+    				signal_error = true;
+ 				}
 				if(xhr.responseText){
 		    		//update_status(xhr.responseText);
 					obj_user = JSON.parse(xhr.responseText);
@@ -656,7 +688,6 @@ VRChatフレンド手帳　Ver0.08
 		//update_status("取得種類："+var_info_type);
 		
 		var xhrURL		=  'https://api.vrchat.cloud/api/1/auth/user/friends'+ "?apiKey="+apiKey+ "&offset="+(100*request_counter_online)+ "&offline=false";
-		request_counter_online+=1;
 		
 		//update_status(xhrURL);
 		
@@ -668,6 +699,10 @@ VRChatフレンド手帳　Ver0.08
 	    
 		xhr.onreadystatechange = function(){
 			if(this.readyState==4){
+			  if(xhr.status === 0) {
+    				update_status("<font color=\"blue\">取得ERROR:"+xhr.status+" 「ユーザー名、パスワードが間違っている可能性があります」</font>");
+    				signal_error = true;
+ 				}
 				if(xhr.responseText){
 		    		//update_status(xhr.responseText);
 						var obj = JSON.parse(xhr.responseText);
@@ -679,7 +714,8 @@ VRChatフレンド手帳　Ver0.08
 							}
 						}
 						if(obj.length==100){
-							update_status("リスト取得：＜"+(100*request_counter_online));
+							request_counter_online+=1;
+							update_status("リスト取得："+(100*request_counter_online)+"＜");
 							get_vrchat_info_friend_list_online(apiKey);
 						}else{
 							obj = obj_temp;
@@ -715,7 +751,6 @@ VRChatフレンド手帳　Ver0.08
 		//update_status("取得種類："+var_info_type);
 		
 		var xhrURL		= 'https://api.vrchat.cloud/api/1/auth/user/friends'+ "?apiKey="+apiKey+ "&offset="+(100*request_counter_offline)+ "&offline=true";
-		request_counter_offline+=1;
 
 
 		//update_status(xhrURL);
@@ -728,6 +763,10 @@ VRChatフレンド手帳　Ver0.08
 	    
 		xhr.onreadystatechange = function(){
 			if(this.readyState==4){
+			  if(xhr.status === 0) {
+    				update_status("<font color=\"blue\">取得ERROR:"+xhr.status+" 「ユーザー名、パスワードが間違っている可能性があります」</font>");
+    				signal_error = true;
+ 				}
 				if(xhr.responseText){
 		    		//update_status(xhr.responseText);
 						var obj = JSON.parse(xhr.responseText);
@@ -739,7 +778,8 @@ VRChatフレンド手帳　Ver0.08
 							}
 						}
 						if(obj.length==100){
-							update_status("リスト取得：＜"+(100*request_counter_offline));
+							request_counter_offline+=1;
+							update_status("リスト取得："+(100*request_counter_offline)+"＜");
 							get_vrchat_info_friend_list_offline(apiKey);
 						}else{
 							obj = obj_temp;
@@ -879,19 +919,32 @@ VRChatフレンド手帳　Ver0.08
 	    
 	}
 	function stop_repeat() {
-		document.getElementById('id_interface_button').innerHTML = "<button onclick=\"get_information()\" style=\"height:30px;width:100px\">取得</button>";
-		document.getElementById('id_repat_time').innerHTML =""
+		document.getElementById('id_interface_button').innerHTML = "<button onclick=\"get_information()\" style=\"height:40px;width:200px\"><font size='4'>取得</font></button>";
+		update_get_button_status("")
 		var_repeat_interval =  0;
+		var var_info_type_list 	= document.getElementsByName('info_type');
+		
+		document.getElementById('id_user').disabled = false;
+		document.getElementById('id_pass').disabled = false;
+		
+	    for(var i=0;i<var_info_type_list.length;i++){
+	    	var_info_type_list[i].disabled = false;
+	    }
+		var var_repeat_type_list 	= document.getElementsByName('repeat_type');
+
+	    for(var i=0;i<var_repeat_type_list.length;i++){
+	    	var_repeat_type_list[i].disabled = false;
+	    }
 	}
 	
 	function get_information() {
 	
 	    if(document.getElementById('id_user').value == ""){
-	    	update_status("<font color='blue'>ユーザー名を入力してください</font>")
+	    	update_get_button_status("<font color='blue'>ユーザー名を入力してください</font>")
 	    	return false;
 	    }
 	    if(document.getElementById('id_pass').value == ""){
-	    	update_status("<font color='blue'>パスワードを入力してください</font>")
+	    	update_get_button_status("<font color='blue'>パスワードを入力してください</font>")
 	    	return false;
 	    }
 	    
@@ -933,13 +986,22 @@ VRChatフレンド手帳　Ver0.08
 			var_repeat_interval = 0;
 		break;
 		}
-		
+
 		var_reapt_start = Date.now();
 	    
 	    if(var_repeat_type == "no_repeat"){
-	    	document.getElementById('id_interface_button').innerHTML = "<button onclick=\"get_information()\" style=\"height:30px;width:100px\">取得</button>";
+	    	document.getElementById('id_interface_button').innerHTML = "<button onclick=\"get_information()\" style=\"height:40px;width:200px\"><font size='4'>取得</font></button>";
 	    }else{
-	    	document.getElementById('id_interface_button').innerHTML = "　　　　　　　　　　　<button onclick=\"stop_repeat()\" style=\"height:30px;width:100px\">停止</button>";
+	    	document.getElementById('id_interface_button').innerHTML = "　　　　　　　　　　　<button onclick=\"stop_repeat()\" style=\"height:40px;width:200px\"><font size='4'>停止</font></button>";
+		    for(var i=0;i<var_info_type_list.length;i++){
+		    	var_info_type_list[i].disabled = true;
+		    }
+		    
+		    for(var i=0;i<var_repeat_type_list.length;i++){
+		    	var_repeat_type_list[i].disabled = true;
+		    }
+			document.getElementById('id_user').disabled = true;
+			document.getElementById('id_pass').disabled = true;
 	    }
 	    
 	    if(g_state == "state_start"){
@@ -1008,14 +1070,18 @@ VRChatフレンド手帳　Ver0.08
 		document.getElementById('id_output_data').innerHTML = message;
 	}
 	function update_status(message) {
-		document.getElementById('id_status').innerHTML = message + "<br>" + document.getElementById('id_status').innerHTML;
+		document.getElementById('id_status').innerHTML = message + "<br>"+document.getElementById('id_status').innerHTML;
+	}
+	function update_get_button_status(message) {
+		document.getElementById('id_get_button_status').innerHTML = message;
 	}
 </script>
 
 </head>
 	<body>
+	<div id="body_all" style="padding:20px;">
 	<div id="id_header">
-		■□■□　VRChatフレンド手帳　Ver0.08　□■□■
+		<font size="5" color="blue">　　　　　　　＝＝　&#x1f4d5;　&#x1f4d6;　VRChatフレンド手帳　　&#x1f4d5;　&#x1f4d6;　＝＝</font>
 	</div>
 	
 	<BR>
@@ -1023,8 +1089,7 @@ VRChatフレンド手帳　Ver0.08
 	<div id="id_interface">■入力：
 		ユーザー名：<input id="id_user">
 		　パスワード：<input id="id_pass" type="password"><BR><BR>
-		　
-		　種類：
+		　◎取得種類：
 		　　<input type="radio"  name="info_type" value="self_info">[0]ユーザー情報<BR>
 		　	<input type="radio"  name="info_type" value="friend_list_online" checked>[A]フレンド一覧(オンライン)　
 		　	<input type="radio"  name="info_type" value="friend_1">[C]フレンド操作＜相手から＞<br>
@@ -1034,7 +1099,7 @@ VRChatフレンド手帳　Ver0.08
 		　　※[A],[B],[E]は、ユーザー数が多いと時間がかかります。
 		<!--出力ファイル名：<input id="id_output" value="output.txt">-->
 		<BR><BR>
-		　取得インターバル：
+		　◎取得インターバル：
 		　　<input type="radio"  name="repeat_type" value="no_repeat" checked>一回だけ
 		　	<input type="radio"  name="repeat_type" value="1min_repeat" >１分おき　
 		　	<input type="radio"  name="repeat_type" value="3min_repeat" >３分おき　
@@ -1042,7 +1107,7 @@ VRChatフレンド手帳　Ver0.08
 		　	<input type="radio"  name="repeat_type" value="10min_repeat" >10分おき　
 		　	<input type="radio"  name="repeat_type" value="30min_repeat" >30分おき　
 		<BR><BR>
-		<span id="id_interface_button"><button onclick="get_information()" style="height:30px;width:100px">取得</button></span>　　<span id="id_repat_time"></span>
+		　　　<span id="id_interface_button"><button onclick="get_information()" style="height:40px;width:200px"><font size="4">取得</font></button></span>　　<span id="id_get_button_status"></span>
 	</div>
 	
 	<BR><BR>
@@ -1053,9 +1118,9 @@ VRChatフレンド手帳　Ver0.08
 	<br>
 	<br>
 	<div id="id_console">■取得ログ：
-		<div id="id_status"></div>
+		<div id="id_status" style="overflow:auto;width:600px;height:200px;border:1px solid #000;padding:5px;margin-left: 20px;margin-top: 5px;"></div>
 	</div>
-
+	</div>
 
 	</body>
 </html>
