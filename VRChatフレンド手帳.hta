@@ -303,14 +303,14 @@ VRChatフレンド手帳　Ver0.10
       var y = obj_world_count[b.location.split(":")[0]];
       if (x > y) return -1;
       if (x < y) return 1;
-      var x = obj_world_with_instance_count[a.location.split("~")[0]];
-      var y = obj_world_with_instance_count[b.location.split("~")[0]];
-      if (x > y) return -1;
-      if (x < y) return 1;
       var x = a.location.split(":")[0];
       var y = b.location.split(":")[0];
       if (x > y) return 1;
       if (x < y) return -1;
+      var x = obj_world_with_instance_count[a.location.split("~")[0]];
+      var y = obj_world_with_instance_count[b.location.split("~")[0]];
+      if (x > y) return -1;
+      if (x < y) return 1;
       var x = a.location.split(":")[1];
       var y = b.location.split(":")[1];
       if (x > y) return 1;
