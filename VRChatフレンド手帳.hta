@@ -1,5 +1,5 @@
 <!--
-VRChatフレンド手帳　Ver0.09
+VRChatフレンド手帳　Ver0.10
 製作者:のの @nonogame5656
 製作日：2019年5月14日
 更新日：2019年5月26日
@@ -10,7 +10,7 @@ VRChatフレンド手帳　Ver0.09
 <html>
 <head>
 <meta http-equiv="X-UA-Compatible" content="IE=Edge" charset="utf-8" />
-<title>VRChatフレンド手帳　Ver0.09</title>
+<title>VRChatフレンド手帳　Ver0.10</title>
 
 <style type="text/css">
     table { table-layout:fixed }
@@ -36,6 +36,7 @@ VRChatフレンド手帳　Ver0.09
 	var obj_world_active="";
 	var obj_world_add=[];
 	var obj_world_count={};
+	var obj_world_with_instance_count={};
 	
 	var g_apiKey="";
 	
@@ -256,35 +257,64 @@ VRChatフレンド手帳　Ver0.09
     }
 	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
     
+    
     //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
-	function sort_friend_by_world(obj) {
+	function count_world_obj(obj) {
 		
 		obj_world_count = {};
 		for(var i=0;i<obj.length;++i){
-		if(!obj_world_count[obj[i].location.split(":")[0]]){
-			obj_world_count[obj[i].location.split(":")[0]] =1;
+			if(!obj_world_count[obj[i].location.split(":")[0]]){
+				obj_world_count[obj[i].location.split(":")[0]] =1;
 			}else{
-			obj_world_count[obj[i].location.split(":")[0]] +=1;
+				obj_world_count[obj[i].location.split(":")[0]] +=1;
 			}
 			//update_status("world数："+obj[i].location.split(":")[0]+" "+obj_world_count[obj[i].location.split(":")[0]]);
 		}
+	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+	
+	
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
+	function count_world_with_instance_obj(obj) {
+		
+		obj_world_with_instance_count = {};
+		for(var i=0;i<obj.length;++i){
+			if(!obj_world_with_instance_count[obj[i].location.split("~")[0]]){
+				obj_world_with_instance_count[obj[i].location.split("~")[0]] =1;
+			}else{
+				obj_world_with_instance_count[obj[i].location.split("~")[0]] +=1;
+			}
+			//update_status("world数："+obj[i].location.split("~")[0]+" "+obj_world_with_instance_count[obj[i].location.split("~")[0]]);
+		}
+	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+    
+	
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
+	function sort_friend_by_world(obj) {
 		
 		//update_status("列数："+obj.length);
       obj = obj.sort(function(a, b){
-      var x = obj_world_count[a.location.split(":")[0]];
-      var y = obj_world_count[b.location.split(":")[0]];
+      if (a.location == "offline"){return 1};
+      if (b.location == "offline"){return -1};
       if (a.location == "private"){return 1};
       if (b.location == "private"){return -1};
+      var x = obj_world_count[a.location.split(":")[0]];
+      var y = obj_world_count[b.location.split(":")[0]];
+      if (x > y) return -1;
+      if (x < y) return 1;
+      var x = obj_world_with_instance_count[a.location.split("~")[0]];
+      var y = obj_world_with_instance_count[b.location.split("~")[0]];
       if (x > y) return -1;
       if (x < y) return 1;
       var x = a.location.split(":")[0];
       var y = b.location.split(":")[0];
-      if (x > y) return -1;
-      if (x < y) return 1;
+      if (x > y) return 1;
+      if (x < y) return -1;
       var x = a.location.split(":")[1];
       var y = b.location.split(":")[1];
-      if (x > y) return -1;
-      if (x < y) return 1;
+      if (x > y) return 1;
+      if (x < y) return -1;
       return 0;
     });
     return obj;
@@ -424,25 +454,41 @@ VRChatフレンド手帳　Ver0.09
 	function display_info_friend_online(obj) {
 		var result="";
 		
-		result += "<table><th>NO.</th><th>サムネイル</th><th>表示名<BR>ユーザー名</th><th>場所</th><th>サムネイル</th><th>交流メモ　　<span id='id_interface_friend_save_button'><input type='file' id='id_load_friend_memo' name='id_load_friend_memo_file' style='display:none'></input><button onclick='load_friend_memo()' style='height:30px;width:100px'>ファイル読込</button><button onclick='save_friend_memo()' style='height:30px;width:100px'>ファイル保存</button></span></th>"
+		result += "<table border='0' cellspacing='4'><th>NO.</th><th>場所</th><th>サムネイル</th><th>表示名<BR>ユーザー名</th><th>交流メモ　　<span id='id_interface_friend_save_button'><input type='file' id='id_load_friend_memo' name='id_load_friend_memo_file' style='display:none'></input><button onclick='load_friend_memo()' style='height:30px;width:100px'>ファイル読込</button><button onclick='save_friend_memo()' style='height:30px;width:100px'>ファイル保存</button></span></th>"
 		for(var i=0;i<obj.length;i++){
 			var world_info="";
 			if(obj[i].location=="private"){
-				world_info = "<td width='360' align='center'><B>PRIVATE</B></td><td width='110' align='center'></td>";
+				world_info = "<td width='470' align='center' ><table><tr><td align='center'><B>PRIVATE</B></td>"+ "</tr></table></td>";
+			}
+			else if(obj[i].location=="offline"){
+				world_info = "<td width='470' align='center' ><table><tr><td align='center'><B>OFFLINE</B></td>"+ "</tr></table></td>";
 			}
 			else{
-				world_obj_info = find_world_name_by_id(obj[i].location.split(':')[0]);
+				var world_obj_info = find_world_name_by_id(obj[i].location.split(':')[0]);
 				
-				if(world_obj_info.name !=""){
-					world_info = "<td width='360' align='center'><B>"+world_obj_info.name+"</B><BR><BR> <font size='2.5'>(" +obj[i].location.split('~')[0]+")</font></td>";
-					//world_info = "<td width='360' align='center'><table><tr><td width='85%' align='center'><B>"+world_obj_info.name+"</B></td><td align='center'><B>"+"<a href='vrchat://launch?ref=vrchat.com&id="+obj[i].location+"'>に移動</a>"+"</B></td></tr></table><BR> (" +obj[i].location.split('~')[0]+")</td>";
-				}else{
-					world_info = "<td width='360' align='center'><B>"+"<a href=\"#\" onclick=\"OnGetWorldName("+i+");return false;\">" +"ワールドの名前とサムネイル取得"+"</a></B><br><BR><font size='2.5'> (" +obj[i].location.split('~')[0]+")</font></td>";
-				}
-				if(world_obj_info.thumbnailImageURL !=""){
-					world_info += "<td width='110' align='center' valign='middle'>"+"<img src=\""+world_obj_info.imageUrl+"\" width=\"100\"></td>"
-				}else{
-					world_info += "<td width='110' align='center'></td>"
+				if(i==0 || (obj[i].location.split('~')[0] != obj[i-1].location.split('~')[0])){
+						world_info += "<td width='470' rowspan='"+obj_world_with_instance_count[obj[i].location.split('~')[0]]+"'><table><tr>"
+					if(1 < (obj_world_with_instance_count[obj[i].location.split('~')[0]])) {
+						if(world_obj_info.name !=""){
+							world_info += "<td width='140' align='center' valign='middle'>"+"<img src=\""+world_obj_info.imageUrl+"\" width=\"140\" height=\"105\"></td>"
+							world_info += "<td width='360' align='center' ><B>"+world_obj_info.name+" : "+obj[i].location.split('~')[0].split(':')[1]+"</B></td></tr><tr><td colspan='2' align='center'> <font size='2.5'>(" +obj[i].location.split('~')[0]+")</font></td>";
+							//world_info = "<td width='360' align='center'><table><tr><td width='85%' align='center'><B>"+world_obj_info.name+"</B></td><td align='center' valign='middle'><B>"+"<a href='vrchat://launch?ref=vrchat.com&id="+obj[i].location+"'>に移動</a>"+"</B></td></tr></table><BR> (" +obj[i].location.split('~')[0]+")</td>";
+						}else{
+							world_info += "<td width='140' align='center' ></td>"
+							world_info += "<td width='360' align='center' ><font color='blue'><B>ワールドの名前とサムネイル取得中</B></font></td></tr><tr><td colspan='2' align='center'><font size='2.5'> (" +obj[i].location.split('~')[0]+")</font></td>";
+						}
+					}else{
+						if(world_obj_info.name !=""){
+							world_info += "<td width='140' align='center' valign='middle'>"+"<img src=\""+world_obj_info.imageUrl+"\" width=\"100\" height=\"75\"></td>"
+							world_info += "<td width='360' align='center' ><B>"+world_obj_info.name+" : "+obj[i].location.split('~')[0].split(':')[1]+"</B><BR><BR> <font size='2.5'>(" +obj[i].location.split('~')[0]+")</font></td>";
+							//world_info = "<td width='360' align='center'><table><tr><td width='85%' align='center'><B>"+world_obj_info.name+"</B></td><td align='center' valign='middle'><B>"+"<a href='vrchat://launch?ref=vrchat.com&id="+obj[i].location+"'>に移動</a>"+"</B></td></tr></table><BR> (" +obj[i].location.split('~')[0]+")</td>";
+						}else{
+							world_info += "<td width='140' align='center' ></td>"
+							//world_info += "<td width='360' align='center' ><B>"+"<a href=\"#\" onclick=\"OnGetWorldName("+i+");return false;\">" +"ワールドの名前とサムネイル取得"+"</a></B><br><BR><font size='2.5'> (" +obj[i].location.split('~')[0]+")</font></td>";
+							world_info += "<td width='360' align='center' ><font color='blue'><B>ワールドの名前とサムネイル取得中"+"</B></font><br><BR><font size='2.5'> (" +obj[i].location.split('~')[0]+")</font></td>";
+						}
+					}
+						world_info += "</tr></table></td>"
 				}
 			}
 			var obj_friend_memo = obj_friends_memo[obj[i].id];
@@ -452,12 +498,12 @@ VRChatフレンド手帳　Ver0.09
 			}
 			result += "<tr height='30'>"
 			
-			result += "<td width='30' align='center'>"
-					+(i+1)+"</td><td width='110' align='center' valign='middle'>"
+			result +=  "<td width='30' align='center'>" +(i+1)+"</td>"
+					+world_info
+					+"<td width='110' align='center' valign='middle'>"
 					+"<img src=\""+obj[i].currentAvatarThumbnailImageUrl+"\" width=\"100\"></td><td width='200' align='center'><font size='4'><B>"
 					+obj[i].displayName+"</B></font><br><br>"
 					+obj[i].username+"</td>"
-					+world_info//
 					+"<td width='160' align='center'><textarea id ="+"id_friend_memo/"+obj[i].id+" name ='friend_memo' rows='5' cols='33'>"+friend_memo+"</textarea></td>"
 			result += "</tr>"
 		}
@@ -473,7 +519,7 @@ VRChatフレンド手帳　Ver0.09
 	function display_info_friend_offline(obj) {
 		var result="";
 		
-		result += "<table><th>NO.</th><th>サムネイル</th><th>表示名<BR>ユーザー名</th><th>場所</th><th>交流メモ　　<span id='id_interface_friend_save_button'><input type='file' id='id_load_friend_memo' name='id_load_friend_memo_file' style='display:none'></input><button onclick='load_friend_memo()' style='height:30px;width:100px'>ファイル読込</button><button onclick='save_friend_memo()' style='height:30px;width:100px'>ファイル保存</button></span></th>"
+		result += "<table><th>NO.</th><th>場所</th><th>サムネイル</th><th>表示名<BR>ユーザー名</th><th>交流メモ　　<span id='id_interface_friend_save_button'><input type='file' id='id_load_friend_memo' name='id_load_friend_memo_file' style='display:none'></input><button onclick='load_friend_memo()' style='height:30px;width:100px'>ファイル読込</button><button onclick='save_friend_memo()' style='height:30px;width:100px'>ファイル保存</button></span></th>"
 		result += "<tr height='10'>"
 		for(var i=0;i<obj.length;i++){
 			var obj_friend_memo = obj_friends_memo[obj[i].id];
@@ -481,12 +527,11 @@ VRChatフレンド手帳　Ver0.09
 			if(obj_friend_memo){
 				friend_memo = obj_friend_memo.memo;
 			}
-			result += "<td width='30' align='center'>"
-					+(i+1)+"</td><td width='110' align='center'>"
+			result += "<td width='30' align='center'>"+(i+1)+"</td>"
+					+"<td width='300' align='center'>"+"offline</td><td width='110' align='center'>"
 					+"<img src=\""+obj[i].currentAvatarThumbnailImageUrl+"\" width=\"100\"></td><td width='200' align='center'><font size='4'><B>"
 					+obj[i].displayName+"</B></font><br><br>"
-					+obj[i].username+"</td><td width='300' align='center'>"
-					+"offline</td>"//
+					+obj[i].username+"</td>"//
 					+"<td width='160' align='center'><textarea id ="+"id_friend_memo/"+obj[i].id+" name ='friend_memo' rows='5' cols='40'>"+friend_memo+"</textarea></td>"
 			result += "</tr>"
 		}
@@ -780,6 +825,15 @@ VRChatフレンド手帳　Ver0.09
 						}else{
 							obj = obj_temp;
 							obj_temp = "";
+							count_world_obj(obj);
+							count_world_with_instance_obj(obj);
+							for(var key in obj_world_count){
+								var world_info = find_world_name_by_id(key);
+								//update_status("URL："+key+world_info.name);
+								if((world_info.name=="")&&(key!="private")&&(key!="offline")){
+									GetWorldNameByid(key);
+								}
+							}
 							obj_friends_online = sort_friend_by_world(obj);
 							request_counter_online=0;
 						}
@@ -958,6 +1012,33 @@ VRChatフレンド手帳　Ver0.09
 					var obj = JSON.parse(xhr.responseText);
 				    obj_world_active = obj;
 				    g_state_pre = "state_get_pre_end";
+	    		}
+			}
+		}
+	    
+	    xhr.open( xhrMethod, xhrURL );
+	    xhr.responseType = "text" ;
+	    xhr.send();
+	    
+	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+	
+	
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
+	function GetWorldNameByid(id) {
+		
+	    var xhr 		= new XMLHttpRequest();
+		var xhrURL		= 'https://api.vrchat.cloud/api/1/worlds/'+id+ "?apiKey="+g_apiKey;
+		var xhrMethod	= 'GET'
+		//update_status("URL："+xhrURL);
+		xhr.onreadystatechange = function(){
+			if(this.readyState==4){
+				if(xhr.responseText){
+					var obj = JSON.parse(xhr.responseText);
+				    obj_world_add.push(obj);
+				    if(g_state_normal == "state_stanby"){
+						g_state_normal = "state_display";;
+					}
 	    		}
 			}
 		}
