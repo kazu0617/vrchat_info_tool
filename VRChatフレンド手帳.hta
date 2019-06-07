@@ -1,8 +1,8 @@
 <!--
-VRChatフレンド手帳　Ver0.10
+VRChatフレンド手帳　Ver0.11
 製作者:のの @nonogame5656
 製作日：2019年5月14日
-更新日：2019年5月26日
+更新日：2019年6月07日
 -->
 
 
@@ -10,7 +10,7 @@ VRChatフレンド手帳　Ver0.10
 <html>
 <head>
 <meta http-equiv="X-UA-Compatible" content="IE=Edge" charset="utf-8" />
-<title>VRChatフレンド手帳　Ver0.10</title>
+<title>VRChatフレンド手帳　Ver0.11</title>
 
 <style type="text/css">
     table { table-layout:fixed }
@@ -23,6 +23,7 @@ VRChatフレンド手帳　Ver0.10
 	var var_info_type 		= "";
 	var var_repeat_type 		= "";
 	var obj_temp = "";
+	var var_file_name = "vrchat_friends_memo.json";
 	
 	var obj_friends_online = "";
 	var obj_friends_offline = "";
@@ -573,7 +574,7 @@ VRChatフレンド手帳　Ver0.10
 	}
 	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
     
-    
+	
     //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function load_friend_memo(){
 		var obj_file_load = document.getElementById('id_load_friend_memo');
@@ -582,6 +583,9 @@ VRChatフレンド手帳　Ver0.10
 		if(obj_file_load.files[0]==null){
 			return false;
 		}
+		
+		var file_name_array = obj_file_load.files[0].name.split("\\");
+		var_file_name = file_name_array[file_name_array.length-1];
 		
 		//update_status("読込ファイル名："+obj_file_load.files[0])
 		var reader = new FileReader();
@@ -627,7 +631,7 @@ VRChatフレンド手帳　Ver0.10
 		
 		//update_status(JSON.stringify(obj_friends_memo));
 		
-		navigator.msSaveOrOpenBlob(new Blob([JSON.stringify(obj_friends_memo)], {type: 'text/plain'}),"vrchat_friends_memo.json");
+		navigator.msSaveOrOpenBlob(new Blob([JSON.stringify(obj_friends_memo)], {type: 'text/plain'}),var_file_name);
 
 	}
 	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
