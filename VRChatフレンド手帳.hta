@@ -1,8 +1,8 @@
 <!--
-VRChatフレンド手帳　Ver0.12
+VRChatフレンド手帳　Ver0.13
 製作者:のの @nonogame5656
 製作日：2019年5月14日
-更新日：2019年6月22日
+更新日：2019年9月28日
 -->
 
 
@@ -10,7 +10,7 @@ VRChatフレンド手帳　Ver0.12
 <html>
 <head>
 <meta http-equiv="X-UA-Compatible" content="IE=Edge" charset="utf-8" />
-<title>VRChatフレンド手帳　Ver0.12</title>
+<title>VRChatフレンド手帳　Ver0.13</title>
 
 <style type="text/css">
     table { table-layout:fixed }
@@ -323,6 +323,29 @@ VRChatフレンド手帳　Ver0.12
     }
 	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
     
+    
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
+	function find_frineds(id) {
+		for(var i=obj_user.friends.length-1;i>=0;i--){
+			if(obj_user.friends[i] == user_id){
+				return true;
+			}
+			
+		}
+		return false;
+	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+	
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
+	function is_local_friends() {
+		for(user_id in obj_friends_memo){
+			if(find_frineds(user_id) == false){
+				return true;
+			}
+		}
+		return false;
+	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 	
     //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function find_world_name_by_id(id) {
@@ -350,6 +373,17 @@ VRChatフレンド手帳　Ver0.12
 	}
 	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 	
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
+	function find_id_in_frineds(obj,id) {
+		for(var i=0;i<obj.length;i++){
+			if(obj[i].id == id){
+				return true;
+			}
+		}
+		return false;
+	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+	
 	
     //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function find_friend_name_by_id(id) {
@@ -367,6 +401,21 @@ VRChatフレンド手帳　Ver0.12
 	}
 	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 	
+    //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
+	function find_unfriend_name_by_id(id) {
+		for(var i=0;i<obj_friends_ope_2.length;i++){
+			if(obj_friends_ope_2[i].targetUserId == id){
+				return obj_friends_ope_2[i];
+			}
+		}
+		for(var i=0;i<obj_friends_ope_1.length;i++){
+			if(obj_friends_ope_1[i].sourceUserId == id){
+				return obj_friends_ope_1[i];
+			}
+		}
+		return {"created":"","type":""};
+	}
+	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 	
     //■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇■◇
 	function find_name_by_id(id) {
@@ -380,7 +429,7 @@ VRChatフレンド手帳　Ver0.12
 				return obj_friends_offline[i];
 			}
 		}
-		return {"username":"","displayName":""};
+		return {"username":"","displayName":"","result":"none"};
 	}
 	//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 	
@@ -556,6 +605,10 @@ VRChatフレンド手帳　Ver0.12
 			var friend_memo = ""
 			if(obj_friend_memo){
 				friend_memo = obj_friend_memo.memo;
+				if(friend_obj.username == ""){
+					friend_obj = obj_friend_memo
+					friend_obj.currentAvatarThumbnailImageUrl = ""
+				}
 			}
 		result += "<tr height='10'>"
 		result += "<td align='center'>"
@@ -570,6 +623,36 @@ VRChatフレンド手帳　Ver0.12
 		result += "</tr>"
 		}
 		result += "</table>";
+		
+		result += "</table><BR><BR>";
+		
+		
+		//一覧になし
+		if(is_local_friends()){
+			result += "<P>■ローカルフレンド（フレンドメモにいるけどフレンド一覧にいないフレンド）</P>";
+			result += "<table width='100%'><th width='4%'>NO.</th><th width='13%'>ID</th><th width='10%'>サムネイル</th><th width='20%'>表示名<BR>ユーザー名</th><th width='40%'>交流メモ　　<span id='id_interface_friend_save_button'><input type='file' id='id_load_friend_memo' name='id_load_friend_memo_file' style='display:none'></input><button onclick='load_friend_memo()' style='height:50px;width:35%'>ファイル読込</button><button onclick='save_friend_memo()' style='height:50px;width:35%'>ファイル保存</button></span></th>"
+			for(user_id in obj_friends_memo){
+				if(find_frineds(user_id) == true){
+					continue;
+				}
+
+			result += "<tr height='10'>"
+			result += "<td align='center'>"
+					+(i+1)+"</td><td width='100' align='center'>"
+					+"<font size=\"2\">"+user_id+"</font></td><td align='center'>"
+					+"</td><td align='center'><font size='4'><B>"
+					+obj_friends_memo[user_id].displayName+"</B></font><br><br>"
+					+obj_friends_memo[user_id].username+"</td>"
+					+"<td align='center'><textarea id ="+"id_friend_memo/"+user_id+" name ='friend_memo' rows='5' cols='40%'>"+obj_friends_memo[user_id].memo+"</textarea></td>"
+			result += "</tr>"
+			}
+			result += "</table>";
+		}
+		
+		
+		
+		
+		
 		msg_out(result);
 		//update_status("列数："+obj.friends.length)
 	}
@@ -594,7 +677,6 @@ VRChatフレンド手帳　Ver0.12
 		reader.onload = function() {
 			obj_friends_memo = JSON.parse(reader.result);
 			//update_status("LOAD："+reader.result)
-			
 			for(var key in obj_friends_memo){
 				var var_memo 	= document.getElementById('id_friend_memo/'+key);
 				if(var_memo != null){
@@ -604,6 +686,11 @@ VRChatフレンド手帳　Ver0.12
 						var_memo.value = var_memo.value+"\n"+obj_friends_memo[key].memo;
 					}
 				}
+			}
+			
+			temp_save_friend_memo()
+		    if(g_state_normal == "state_stanby"){
+				g_state_normal = "state_display";
 			}
 		}
 		
@@ -619,6 +706,14 @@ VRChatフレンド手帳　Ver0.12
 
 		for(var i=0;i<var_friend_memo_list.length;i++){
 			var friend_obj = find_name_by_id(var_friend_memo_list[i].id.split('/')[1])
+			if(friend_obj.username == "" ){
+				friend_obj = obj_friends_memo[var_friend_memo_list[i].id.split('/')[1]]
+			}
+			
+			if(!friend_obj){
+				friend_obj = {"username" : "","displayName" : ""};
+			}
+			
 			obj_friends_memo[var_friend_memo_list[i].id.split('/')[1]] = {"username":friend_obj.username,"displayName":friend_obj.displayName,memo:var_friend_memo_list[i].value};
 		}
 	}
@@ -871,7 +966,7 @@ VRChatフレンド手帳　Ver0.12
 		//update_status("apiKey："+apiKey);
 		//update_status("取得種類："+var_info_type);
 		
-		var xhrURL		= 'https://api.vrchat.cloud/api/1/auth/user/friends'+ "?apiKey="+apiKey+ "&offset="+(100*request_counter_offline)+ "&offline=true";
+		var xhrURL		= 'https://api.vrchat.cloud/api/1/auth/user/friends'+ "?apiKey="+apiKey+ "&offset="+(80*request_counter_offline)+ "&offline=true";
 
 
 		//update_status(xhrURL);
@@ -895,12 +990,14 @@ VRChatフレンド手帳　Ver0.12
 							obj_temp = obj;
 						}else{
 							for(var i=0;i<obj.length;i++){
-								obj_temp.push(obj[i]);
+								if(find_id_in_frineds(obj_temp,obj[i].id) == false){
+									obj_temp.push(obj[i]);
+								}
 							}
 						}
-						if(obj.length==100){
+						if(obj.length>90){
 							request_counter_offline+=1;
-							update_status("リスト取得："+(100*request_counter_offline)+"＜");
+							update_status("リスト取得："+(80*request_counter_offline)+"＜");
 							get_vrchat_info_friend_list_offline(apiKey);
 						}else{
 							obj = obj_temp;
@@ -1042,7 +1139,7 @@ VRChatフレンド手帳　Ver0.12
 					var obj = JSON.parse(xhr.responseText);
 				    obj_world_add.push(obj);
 				    if(g_state_normal == "state_stanby"){
-						g_state_normal = "state_display";;
+						g_state_normal = "state_display";
 					}
 	    		}
 			}
